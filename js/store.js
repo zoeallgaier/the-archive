@@ -16,49 +16,56 @@ import { readIndex, writeIndex, deleteMedia } from './platform.js';
 let nodes = [];
 let loaded = false;
 
-/* The five top-level folders. Finished writing first, then the unfinished
-   kind, then the work, then what was read, then the images — the archive's own
-   order of importance.
+/* The five top-level folders, in the order they appear on the home screen:
+   images, then the work, then what was read, then the finished writing, then
+   the unfinished kind. Loosest to tightest — the archive opens on the thing
+   you look at without reading and ends on the thing nobody has read yet.
 
    `name` is the display word and `prefix` is the path, and they are allowed to
-   disagree. A path is an identifier: it was written into 214 nodes at
+   disagree. A path is an identifier: it was written into 289 nodes at
    migration and renaming one would mean rewriting every one of them plus every
    route that points at them. A name is a label on a screen. So the folder
-   whose contents live under `works/` is called Galleries, and `reads/` is
-   called Library, and nothing on disk had to move for that to be true.
+   whose contents live under `works/` is called Artwork, `marginalia/` is
+   called Essays, `braindumps/` is called Notes, and nothing on disk moved for
+   any of it — which is the point of the split. Three of the five names have
+   been changed since migration and no node has ever been rewritten for one.
 
    `mode` is how the row behaves. Most folders expand in place, which is the
-   point of a file tree. The moodboard opens instead: 145 filenames is not
+   point of a file tree. The Vibe opens instead: 200-odd filenames is not
    information, and the grid IS how you read that folder.
 
-   `treat` is how the folder's contents are SET. A folder of essays and a
-   folder of books are not the same kind of list and shouldn't be typeset as
-   though they were — an essay is a title and a date, a book is a title and
-   whoever wrote it. See tree.js. */
+   `treat` is how the folder's contents are SET — see tree.js.
+
+   `add` is what making a new one of these MEANS, and this list is therefore
+   also the menu the ＋ opens — see create.add. That's the reason it is worth a
+   field here rather than a switch over folder names somewhere else: the
+   archive has five places a thing can go, so adding has five answers, and the
+   tree and the ＋ card are two readings of the same five rows in the same
+   order, printing the same five words.
+
+   It is also why nothing here lists where a written piece may land any more. A
+   new piece used to be published into a folder chosen at the end, because
+   starting from a bare Write button there was no earlier moment to ask. Now
+   you start from the folder, so the answer arrives with the question.
+
+   There is no `icon` field any more. Each folder used to carry the name of a
+   sprite, because the ＋ opened a dial of round buttons with no room for a
+   word in them and the tree set the same drawings beside its own words. Both
+   are lists of names now, and a row that has `name` doesn't need a picture of
+   it — the five drawings went out of index.html with the field. */
 export const FOLDERS = [
-  { name: 'Marginalia', prefix: 'marginalia/', mode: 'expand', treat: 'essay' },
-  { name: 'Braindumps', prefix: 'braindumps/', mode: 'expand', treat: 'essay' },
-  { name: 'Galleries',  prefix: 'works/',      mode: 'expand', treat: 'work'  },
-  { name: 'Library',    prefix: 'reads/',      mode: 'expand', treat: 'read'  },
-  { name: 'Moodboard',  prefix: 'moodboard/',  mode: 'open',   route: '#/moodboard' },
+  { name: 'The Vibe', prefix: 'moodboard/',  mode: 'open',   route: '#/moodboard', add: 'photos' },
+  { name: 'Artwork',  prefix: 'works/',      mode: 'expand', treat: 'work',  add: 'pieces' },
+  { name: 'Library',  prefix: 'reads/',      mode: 'expand', treat: 'read',  add: 'book'   },
+  { name: 'Essays',   prefix: 'marginalia/', mode: 'expand', treat: 'essay', add: 'write'  },
+  { name: 'Notes',    prefix: 'braindumps/', mode: 'expand', treat: 'essay', add: 'write'  },
 ];
 
-/* Where a written piece can land. Marginalia is the considered version and
-   braindumps is the unconsidered one; they hold the same kind of node and
-   differ only in how much you meant it. Both are offered at publish time
-   rather than at the start, because you often don't know which one you were
-   writing until you've stopped. */
-export const WRITE_TARGETS = [
-  { label: 'Marginalia', prefix: 'marginalia/' },
-  { label: 'Braindumps', prefix: 'braindumps/' },
-];
-
-/** Where a new photo is allowed to land. */
-export const PHOTO_TARGETS = () => [
-  { label: 'Moodboard', prefix: 'moodboard/' },
-  ...all().filter((n) => n.kind === 'work')
-    .map((w) => ({ label: w.title, prefix: `${w.path}/` })),
-];
+/** The display word for a path's folder, e.g. "reads/behave" -> "Library". */
+export function folderName(path) {
+  const f = FOLDERS.find((x) => path.startsWith(x.prefix));
+  return f ? f.name : '';
+}
 
 /* ── Boot ───────────────────────────────────────────────────────────────────
    First launch seeds from the bundled index. Only the INDEX is copied — seed
@@ -167,6 +174,12 @@ export function children(prefix) {
 export const subtree = (prefix) => nodes.filter((n) => n.path.startsWith(prefix));
 
 export const count = (prefix) => subtree(prefix).length;
+
+/* There are no tags. An image carries no words, so it isn't searchable, and
+   that is the honest state of it — the alternative was a tagging mode, a
+   vocabulary, chips in three places and an afternoon of labelling two hundred
+   photographs before search returned a single one of them. The wall is how you
+   find an image. Search is for text. */
 
 /** The folder a node lives in, e.g. "marginalia/apathy" -> "marginalia". */
 export const folderOf = (path) => path.split('/')[0];

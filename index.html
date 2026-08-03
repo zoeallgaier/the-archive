@@ -5,37 +5,78 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="format-detection" content="telephone=no">
 <!-- Both themes are real, so the webview must not assume either one. -->
-<meta name="color-scheme" content="dark light">
+<meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
 <title>Archive</title>
+
+<!-- ═══ homescreen ══════════════════════════════════════════════════════════
+     What turns the URL into an app. Safari reads the apple-* metas; the
+     manifest is what macOS Safari's "Add to Dock" and every other browser
+     read. Both are here because the archive is opened from a phone homescreen
+     and a Mac dock, and neither format covers both.
+
+     STATUS BAR STYLE IS `default`, NOT `black-translucent`, and that's a
+     deliberate loss. Translucent is what the native build gets: content runs
+     full-bleed under the clock, which is what env(safe-area-inset-top) in
+     app.css is paying for. But it also forces the status bar's text WHITE
+     permanently — and this app has a real light theme with a white ground, so
+     in daylight the clock and the battery would be white on white. `default`
+     hands the status bar to the theme-color metas above, which are already
+     declared per colour-scheme, so it stays legible in both. -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Archive">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="manifest" href="manifest.webmanifest">
+
+<!-- The archive is reachable by URL, which is not the same as wanting it
+     found. Nothing here should ever turn up in a search result. -->
+<meta name="robots" content="noindex, nofollow">
+
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
 
-<!-- ═══ y2k icon set ═══════════════════════════════════════════════════════
-     One sprite, geometric, hairline stroke, no fills, no rounded joins. Small
-     on purpose: the tree stopped using icons, so what's left is only the
-     handful that stand in for a verb.
+<!-- ═══ icon set ════════════════════════════════════════════════════════════
+     One sprite, geometric, hairline stroke, no fills, no rounded joins. Eight
+     drawings, and every one of them is a VERB or a thing you do: five in the
+     composer row, one on an outbound link, two of the editor's marks.
+
+     THE FIVE FOLDERS USED TO BE IN HERE TOO — a heel, a frame, an open book, a
+     margin rule, a pencil — because the ＋ opened a dial of round buttons with
+     no room for a word in them, and the tree set the same marks beside its own
+     words. Both menus are lists of names now, so both say "Library" where they
+     used to draw one, and five careful little pictures of five words that were
+     already on the screen went with them. A drawing earns its place here by
+     standing for something that has no word short enough to print.
+
+     ONE INK. Every stroke in every drawing here is at full strength. Half of
+     them used to be set at 50% to say which part of a drawing was structural
+     and which was detail, and at 16px that is not a hierarchy, it is a mark
+     drawn in two colours: the faint parts read as a rendering fault rather
+     than as subordinate. What a drawing is OF does the work these opacities
+     were doing. Nothing in this sprite carries an opacity.
      ══════════════════════════════════════════════════════════════════════ -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
 
+  <!-- The one control that is on nearly every screen. It opens a card, so it
+       has no second state to draw: the row it lives in slides away while the
+       card is up, and the card is dismissed by the scrim, a swipe, or picking
+       something. -->
   <symbol id="ic-plus" viewBox="0 0 16 16">
-    <path d="M8 2.5v11M2.5 8h11" fill="none" stroke="currentColor"
-          stroke-width="1.25" stroke-linecap="square"/>
+    <path d="M8 3.25v9.5M3.25 8h9.5" fill="none" stroke="currentColor"
+          stroke-width="1" stroke-linecap="square"/>
   </symbol>
 
-  <symbol id="ic-close" viewBox="0 0 16 16">
-    <path d="M3.5 3.5l9 9M12.5 3.5l-9 9" fill="none" stroke="currentColor"
+  <symbol id="ic-search" viewBox="0 0 16 16">
+    <circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="1"/>
+    <path d="M10.4 10.4L14 14" fill="none" stroke="currentColor"
           stroke-width="1.25" stroke-linecap="square"/>
-  </symbol>
-
-  <symbol id="ic-link" viewBox="0 0 16 16">
-    <path d="M6.5 3.5H13v6.5" fill="none" stroke="currentColor" stroke-width="1"/>
-    <path d="M13 3.5L6 10.5" fill="none" stroke="currentColor" stroke-width="1"/>
-    <path d="M11 13H3V5" fill="none" stroke="currentColor" stroke-width="1" opacity=".5"/>
   </symbol>
 
   <symbol id="ic-back" viewBox="0 0 16 16">
@@ -43,20 +84,60 @@
           stroke-width="1.25" stroke-linecap="square"/>
   </symbol>
 
-  <symbol id="ic-export" viewBox="0 0 16 16">
-    <path d="M8 10.5V2.5M5 5.5L8 2.5l3 3" fill="none" stroke="currentColor" stroke-width="1"/>
-    <path d="M2.5 9.5v4h11v-4" fill="none" stroke="currentColor" stroke-width="1"/>
-  </symbol>
-
-  <symbol id="ic-edit" viewBox="0 0 16 16">
-    <path d="M2.5 11.2L11 2.7l2.3 2.3-8.5 8.5H2.5z" fill="none" stroke="currentColor" stroke-width="1"/>
-    <path d="M9.4 4.3l2.3 2.3" fill="none" stroke="currentColor" stroke-width="1" opacity=".5"/>
+  <symbol id="ic-link" viewBox="0 0 16 16">
+    <path d="M6.5 3.5H13v6.5" fill="none" stroke="currentColor" stroke-width="1"/>
+    <path d="M13 3.5L6 10.5" fill="none" stroke="currentColor" stroke-width="1"/>
+    <path d="M11 13H3V5" fill="none" stroke="currentColor" stroke-width="1"/>
   </symbol>
 
   <symbol id="ic-trash" viewBox="0 0 16 16">
     <path d="M3.5 4.5h9M6 4.5V3h4v1.5M4.5 4.5l.7 9h5.6l.7-9"
           fill="none" stroke="currentColor" stroke-width="1"/>
-    <path d="M6.8 7v4M9.2 7v4" fill="none" stroke="currentColor" stroke-width="1" opacity=".5"/>
+    <path d="M6.8 7v4M9.2 7v4" fill="none" stroke="currentColor" stroke-width="1"/>
+  </symbol>
+
+  <!-- Everything you can do to the thing you're reading, before you've asked
+       what that is. It is the only mark in the sprite that is not a picture of
+       its verb, because it doesn't have one: it stands for three of them, and
+       the card it opens says which in words. The dots are the same round caps
+       the list's bullets are drawn with — nothing else here is a dot, so at
+       16px it can't be mistaken for any other mark in the row. -->
+  <symbol id="ic-more" viewBox="0 0 16 16">
+    <path d="M3.5 8h.01M8 8h.01M12.5 8h.01" fill="none" stroke="currentColor"
+          stroke-width="1.5" stroke-linecap="round"/>
+  </symbol>
+
+  <!-- ── The marks ─────────────────────────────────────────────────────────
+       Two of the editor's six. Four of them are letters set in the style they
+       make — a bold B, an italic I, an oversized H, a large “ — and a
+       letter that IS its own result needs no drawing. These two make a SHAPE
+       on the page instead, so they get one: a small picture of what the
+       paragraph is about to become. Same hairline, same grid, one ink. -->
+
+  <!-- A list. The bullets are round dots and the text is straight lines, which
+       is the difference the drawing turns on — nothing here needs a second
+       opacity to say which of the two is the point. -->
+  <symbol id="ic-list" viewBox="0 0 16 16">
+    <path d="M2.5 4h.01M2.5 8h.01M2.5 12h.01" fill="none" stroke="currentColor"
+          stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M6 4h7.5M6 8h7.5M6 12h5" fill="none" stroke="currentColor"
+          stroke-width="1"/>
+  </symbol>
+
+  <!-- ONE BOX, TICKED, and it is the whole square. The obvious drawing was the
+       icon above with boxes for bullets — a checklist is a list, after all —
+       and at 20px that is three 6px boxes with a tick in one of them, which is
+       four drawings' worth of line in the space of one and reads as a smudge.
+
+       So this one gives up saying "list" (the icon beside it already does) and
+       says "checked" at a size where the tick is legible. It's the same box
+       and the same tick .prose draws on a done item, which is the object the
+       button actually makes. -->
+  <symbol id="ic-check" viewBox="0 0 16 16">
+    <rect x="3" y="3" width="10" height="10" rx="1.5" fill="none"
+          stroke="currentColor" stroke-width="1"/>
+    <path d="M5.5 8.1l1.9 1.9 3.5-4" fill="none" stroke="currentColor"
+          stroke-width="1" stroke-linecap="square"/>
   </symbol>
 
 </svg>
@@ -67,25 +148,85 @@
 
 <!-- The bottom bar is not navigation, and it is not five bars pretending to be
      one. It's a single row that changes shape: no screen in the app has a
-     header, so back, edit and delete come down here and widen in from nothing
-     when the screen you're on has use for them. The wide pill in the middle is
-     always the main verb — Write on most screens, Publish in the editor.
+     header, so everything a header would have carried comes down here and
+     widens in from nothing when the screen you're on has use for it.
 
-     Every button is in the DOM at all times. Collapsing to zero width is what
-     makes it a morph; rebuilding the row would make it a replacement. -->
+     THE ROW HAS TWO ENDS AND THEY MEAN DIFFERENT THINGS.
+
+       LEFT is leaving, and only leaving. Back sits where the swipe-back
+       gesture starts, so the gesture and the button are the same idea in the
+       same corner and one is just the slower way to do the other.
+
+       RIGHT is where the phone is actually held. A right thumb pivots at the
+       bottom right corner and sweeps a quarter circle up and to the left, so
+       the thing you reach for from anywhere — the ＋, or the ⋯ that stands in
+       for it on a page — lives at the bottom of that sweep, and so does the
+       card either one opens: it rises from the bottom edge right where the
+       button was.
+
+     FOUR BUTTONS BECAME TWO. A screen showing one piece of writing used to
+     stand back at one edge and edit, delete, ⌕ and ＋ at the other, under
+     something you were trying to read, most of them about administering the
+     piece rather than reading it. The three that belong to the piece are rows
+     in the card the ⋯ opens now — named in words, which is what a rare verb
+     wants — and the ⌕ is gone from every screen but the two that search. See
+     entries.js and dressComposer in app.js.
+
+     What's left in the row besides back and the corner is the delete pill,
+     which widens in for the lightbox alone: a full-screen photograph has
+     nowhere to put a card and nothing else you can do to it.
+
+     Every button is in the DOM at all times — collapsing to zero width is what
+     makes it a morph; rebuilding the row would make it a replacement. What a
+     screen doesn't need closes up rather than leaving a hole, and the two ends
+     collapse toward their own edge so neither group ever drifts inward.
+
+     The wide slot in the middle holds one of two things, or nothing:
+
+       THE SEARCH FIELD, on the two screens that are about searching — the
+       contents page, where there's nothing else to do, and the results, which
+       are a rendering of what's in it. Nowhere else, and there is no ⌕ button
+       leading here from anywhere else either: a keyboard-sized target sat
+       under every essay in the archive advertising a thing you weren't doing,
+       and replacing it with an icon that opened it was the same offer in less
+       ink. Searching starts on the contents page, which is one back-swipe from
+       everywhere and is already where you go to look for something.
+
+       THE MAIN ACTION, on the screens that have one — Publish in the editor.
+       That screen is doing one thing and search isn't it. -->
 <div class="composer" id="composer">
   <button class="composer__morph" id="composer-back" type="button" aria-label="Back">
     <svg class="ic"><use href="#ic-back"></use></svg>
   </button>
-  <button class="composer__morph" id="composer-edit" type="button" aria-label="Edit">
-    <svg class="ic"><use href="#ic-edit"></use></svg>
-  </button>
   <button class="composer__morph" id="composer-trash" type="button" aria-label="Delete">
     <svg class="ic"><use href="#ic-trash"></use></svg>
   </button>
-  <button class="composer__main" id="composer-main" type="button">Write</button>
-  <button class="composer__morph composer__add" id="composer-add" type="button" aria-label="Add">
+
+  <div class="composer__slot">
+    <label class="composer__search" id="composer-search-shell">
+      <svg class="ic composer__search-ic"><use href="#ic-search"></use></svg>
+      <input class="composer__field" id="composer-search" type="search"
+             placeholder="Search" aria-label="Search the archive"
+             autocomplete="off" autocorrect="off" autocapitalize="none"
+             spellcheck="false" enterkeyhint="search">
+    </label>
+    <button class="composer__main" id="composer-main" type="button">Publish</button>
+  </div>
+
+  <!-- The corner. Exactly one of these two is ever on at a time and they land
+       on the same spot: the ＋ where you can add to the archive, the ⋯ where
+       you're looking at one thing and the verbs belong to it. The thumb learns
+       one position and finds whichever of them the screen has — and both open
+       the same object, a card at the bottom of the screen listing words. -->
+  <button class="composer__morph composer__morph--right"
+          id="composer-add" type="button" aria-label="Add"
+          aria-haspopup="true">
     <svg class="ic"><use href="#ic-plus"></use></svg>
+  </button>
+  <button class="composer__morph composer__morph--right"
+          id="composer-more" type="button" aria-label="Actions"
+          aria-haspopup="true">
+    <svg class="ic"><use href="#ic-more"></use></svg>
   </button>
 </div>
 

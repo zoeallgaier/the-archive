@@ -1,105 +1,75 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   GALLERY — the moodboard, the works, and the lightbox they share.
+   GALLERY — The Vibe, the artwork, and the lightbox they share.
 
    The packing is done by CSS columns, not JavaScript. There's nothing to
    recompute on rotate, nothing to desync from the DOM, and no measure pass on
-   145 tiles at boot. What makes it scroll cleanly in a webview is upstream of
-   the layout: 400px thumbnails, real width/height on every <img> so nothing
-   reflows as images arrive, and content-visibility so off-screen tiles skip
-   paint entirely.
+   two hundred tiles at boot. What makes it scroll cleanly in a webview is
+   upstream of the layout: 400px thumbnails, real width/height on every <img>
+   so nothing reflows as images arrive, and content-visibility so off-screen
+   tiles skip paint entirely.
 
    None of these screens has a top bar. A caption over a wall of images is
    telling you what you can see, and the bar was costing 52px plus a hairline
    at the exact edge where the pictures want to start. `view--bare` moves the
    back button into the floating composer instead — see app.js.
-
-   A gallery's own title is centred, and it's the only centred type in the app.
-   Everything else hangs off one left margin because it's a column of things
-   you scan; a gallery has exactly one title and then it stops being text, so
-   there's no column for it to belong to. Left-aligned it read as the first
-   item in a list that never arrived.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import * as store from './store.js';
 import * as media from './media.js';
-import { el, icon, body, empty, toast, confirm } from './ui.js';
+import * as create from './create.js';
+import { el, body, head, empty, toast, confirm } from './ui.js';
 import { tick } from './platform.js';
+import { borrowComposer } from './app.js';
 
-/* ── Moodboard ──────────────────────────────────────────────────────────── */
+/* ── The Vibe ───────────────────────────────────────────────────────────── */
 
 export function renderBoard(nav) {
   const images = store.children('moodboard/');
   const view = el('div.view.view--bare');
-  view.__chrome = { back: true, add: true,
-    main: { label: 'Write', onclick: () => nav('#/write') } };
   // Re-enter the same route after a delete, so the grid reflows without the
   // removed tile and the scroll position is preserved by the router.
   const refresh = () => nav(location.hash || '#/moodboard', true);
 
   const scroll = body();
-  scroll.append(images.length ? grid(images, refresh) : empty('No images yet'));
   view.append(scroll);
+
+  /* The ＋ here doesn't ask which folder. On a gallery that question has
+     already been answered by the screen you're standing on, so the button goes
+     straight to the picker. */
+  view.__chrome = {
+    back: true,
+    add: () => create.photos('moodboard/', refresh),
+  };
+
+  scroll.append(images.length ? grid(images, refresh) : empty('No images yet'));
   return view;
 }
 
-/* ── A work ─────────────────────────────────────────────────────────────── */
+/* ── One work ───────────────────────────────────────────────────────────── */
 
 export function renderWork(slug, nav) {
   const work = store.get(`works/${slug}`);
   const pieces = store.children(`works/${slug}/`);
   const view = el('div.view.view--bare');
-  view.__chrome = { back: true, add: true,
-    main: { label: 'Write', onclick: () => nav('#/write') } };
   const refresh = () => nav(location.hash, true);
 
   if (!work) {
+    view.__chrome = { back: true, add: true };
     view.append(body(empty('No such work')));
     return view;
   }
 
   const scroll = body();
-  scroll.append(el('header.workhead', {},
-    el('h1.workhead__title', { text: work.title }),
-    el('div.t-micro.workhead__meta', {
-      text: [work.date, `${pieces.length} pieces`].filter(Boolean).join(' · '),
-    })));
+  scroll.append(head(work.title,
+    [work.date, `${pieces.length} pieces`].filter(Boolean).join(' · ')));
+  view.append(scroll);
+
+  view.__chrome = {
+    back: true,
+    add: () => create.photos(`${work.path}/`, refresh),
+  };
 
   scroll.append(pieces.length ? grid(pieces, refresh) : empty('Nothing in here yet'));
-  view.append(scroll);
-  return view;
-}
-
-/* ── Works index — including the literal room for more ──────────────────── */
-
-export function renderWorks(nav) {
-  const works = store.children('works/');
-  const view = el('div.view.view--bare');
-  view.__chrome = { back: true, add: true,
-    main: { label: 'Write', onclick: () => nav('#/write') } };
-
-  const scroll = body();
-  for (const w of works) {
-    const card = el('button.entry', { onclick: () => nav(`#/w/${w.path.split('/').pop()}`) });
-    card.append(el('span.entry__date', {
-      text: [w.date, `${w.count ?? 0} pieces`].filter(Boolean).join(' · '),
-    }));
-    card.append(el('div.entry__title', { text: w.title }));
-    if (w.thumb) {
-      card.append(el('img.entry__thumb', {
-        src: media.resolveSync(w.thumb), loading: 'lazy', decoding: 'async', alt: w.title,
-      }));
-    }
-    scroll.append(card);
-  }
-
-  // Not a placeholder waiting to be filled — the open slot is part of the
-  // design, and it stays after the next series lands.
-  const slot = el('div.slot');
-  slot.append(icon('plus'));
-  slot.append(el('span.t-micro', { text: 'Room for more' }));
-  scroll.append(slot);
-
-  view.append(scroll);
   return view;
 }
 
@@ -109,7 +79,9 @@ function grid(nodes, onChange) {
   const board = el('div.board');
 
   for (const node of nodes) {
-    const tile = el('button.tile', { onclick: () => openLightbox(node, onChange) });
+    const tile = el('button.tile', {
+      onclick: () => openLightbox(node, { onDelete: onChange }),
+    });
 
     // An intrinsic size per tile, from the real aspect ratio, so the scrollbar
     // is honest before a single image has decoded.
@@ -139,35 +111,48 @@ function grid(nodes, onChange) {
 /* ── Lightbox ───────────────────────────────────────────────────────────────
    Full image, swipe down to dismiss. Deliberately not a carousel: the grid is
    the way you move between images, and a second navigation model inside the
-   viewer would just be a place for the two to disagree. */
+   viewer would just be a place for the two to disagree.
 
-async function openLightbox(node, onChange) {
+   It has no chrome of its own either. Back and delete are the same pills as
+   everywhere else, borrowed for as long as the image is up — a viewer with its
+   own close button in the top corner was a second set of controls for verbs
+   the bottom row already had. */
+
+export async function openLightbox(node, { onDelete } = {}) {
   tick();
 
   const box = el('div.lightbox');
   const img = el('img', { alt: node.title || '', src: await media.resolve(node.media) });
   box.append(img);
 
+  let release = null;
   const close = () => {
+    release?.();
+    release = null;
     box.classList.remove('lightbox--in');
     setTimeout(() => box.remove(), 160);
     window.removeEventListener('popstate', close);
   };
 
-  box.append(el('div.lightbox__bar', {},
-    el('button', { 'aria-label': 'Close', onclick: close }, icon('close')),
-    el('button', {
-      'aria-label': 'Delete',
-      onclick: async (e) => {
-        e.stopPropagation();
-        if (!await confirm('Delete this image?')) return;
-        await store.remove(node.path);
-        tick('Medium');
-        toast('Deleted');
-        close();
-        onChange?.();
-      },
-    }, icon('trash'))));
+  // Back and delete, and nothing else. The ＋ and the ⌕ are on every screen in
+  // the app; they are not on this one, because it isn't a screen — it's one
+  // photograph, full bleed, and the only two things you can do to it from here
+  // are put it down and get rid of it.
+  release = borrowComposer({
+    back: close,
+    trash: async () => {
+      if (!await confirm('Delete this image?')) return;
+      await store.remove(node.path);
+      tick('Medium');
+      toast('Deleted');
+      close();
+      onDelete?.();
+    },
+  });
+
+  // A swipe back leaves the screen underneath, so the image can't stay up over
+  // whatever the router landed on.
+  window.addEventListener('popstate', close);
 
   box.addEventListener('click', (e) => { if (e.target === box || e.target === img) close(); });
 

@@ -1,8 +1,11 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   APP — tree, reader, editor, gallery, nav.
+   APP — tree, reader, editor, gallery, search, chrome.
 
-   Reads only from tokens.css. One weight throughout; where you'd normally
-   expect a bold, look for a size jump or a step up in ink instead.
+   Reads only from tokens.css. Two shapes hold the whole thing together: a
+   rounded pill with a sharp 1px outline, filled with the page, or nothing at
+   all. There is no blur, no shadow, no glass and no blend mode anywhere in
+   this file: a pill is opaque, so what's behind it never reaches it and it
+   needs no help to stay legible over a photograph.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ── Shell ──────────────────────────────────────────────────────────────── */
@@ -18,10 +21,6 @@
   background: var(--void);
 }
 
-/* No view has a header any more. `view--bare` is the acknowledgement of that:
-   it buys back the notch clearance the top bar used to pay for. Every view's
-   chrome lives in the composer instead — see dressComposer in app.js. */
-
 .ic {
   width: calc(var(--u) * 4);
   height: calc(var(--u) * 4);
@@ -29,87 +28,43 @@
   flex: none;
 }
 
-/* ── Top bar ────────────────────────────────────────────────────────────────
-   One line of caps-micro and nothing else. No title, no subtitle. */
-
-.topbar {
-  flex: none;
-  display: flex;
-  align-items: center;
-  gap: var(--stack);
-  height: var(--row-h);
-  padding: 0 var(--page-x);
-  padding-top: env(safe-area-inset-top, 0px);
-  box-sizing: content-box;
-  border-bottom: var(--hair) solid var(--rule);
-  background: var(--void);
-}
-
-.topbar__back {
-  display: flex;
-  align-items: center;
-  margin-left: calc(var(--u) * -2);
-  padding: var(--u) calc(var(--u) * 2);
-  color: var(--ink-3);
-  transition: color var(--fast) var(--ease);
-}
-.topbar__back:active { color: var(--ink); }
-
-.topbar__title {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.topbar__act {
-  display: flex;
-  align-items: center;
-  gap: calc(var(--u) * 3);
-  color: var(--ink-3);
-  margin-right: calc(var(--u) * -1);
-}
-.topbar__act button { color: inherit; padding: var(--u); }
-.topbar__act button:active { color: var(--ink); }
-.topbar__act .danger:active { color: var(--ink); }
-
-/* ── Scroll body ────────────────────────────────────────────────────────── */
-
 .body {
   flex: 1;
   min-height: 0;
   padding-bottom: calc(var(--float-clear) + var(--stack-lg));
 }
 
-/* A screen with no top bar still owes the notch its room — the bar was the
-   only thing paying it. */
+/* No view has a header. `view--bare` is the acknowledgement of that: it buys
+   back the notch clearance a top bar would have paid for. Every view's chrome
+   lives in the composer instead — see dressComposer in app.js. */
 .view--bare > .body {
   padding-top: calc(env(safe-area-inset-top, 0px) + var(--stack));
 }
 
-/* ── File tree ──────────────────────────────────────────────────────────────
-   One margin on the left, the same margin on the right, top to bottom. No
-   title over it — the app has one home screen and you are looking at it, so a
-   wordmark could only tell you what you already know.
+/* ── The tree ───────────────────────────────────────────────────────────────
+   The home screen. Five words, one margin, top to bottom. No title over it —
+   the app has one home screen and you are looking at it, so a wordmark could
+   only tell you what you already know.
 
-     folder   26px RIPOFF, full ink  count  11px, 34% ink, hard right
-     leaf     15px Oxygen, 60% ink
-     sub      11px Oxygen, 24% ink, caps
+     folder   30px Oxygen, full ink
+     count    11px, 38% ink, hard right
+     leaf     15px Oxygen, 62% ink
+     sub      11px Oxygen caps, 20% ink
 
-   The folder row is the only place in the app that changes typeface, and it's
-   what makes the five words read as the contents page rather than as the first
-   five rows of a list. It buys that with a second face instead of a second
-   weight, so the one-weight rule survives intact. See the doctrine at the top
-   of tokens.css before using --font-display anywhere else.
+   The folder row is twice the size of the leaves under it and the only full
+   ink on the screen, and that is what makes the five words read as a contents
+   page rather than as the first five rows of a list. The distance is all in
+   size and ink — see the doctrine at the top of tokens.css.
 
-   Indentation is gone. With only two levels there is nothing for an indent to
-   disambiguate, and the shared left edge does more for the grid than a step
-   would: every line in the app starts at the same x.
+   NOTHING BUT WORDS. Each row used to carry its folder's mark in a gutter to
+   the left — the same drawing the ＋ spends for that folder — and the drawings
+   are gone from the app entirely — the ＋ opens a card of five names now, the
+   same shape the ⋯ opens, and there was a word here already. See tree.js.
 
-   The count is the one thing allowed on the right, and it hangs off the same
-   --tree-x the words start from, so the row is a measured column and not a
-   word with a number drifting somewhere after it. */
+   Indentation is gone too, and there is no longer a gutter for it to be
+   measured against: with only two levels there is nothing for an indent to
+   disambiguate. Every WORD on the screen starts at the same x, which is now
+   --page-x itself, and the count hangs off the mirror of it. */
 
 /* Vertically centres a short tree and scrolls a tall one. margin:auto on the
    flex child rather than justify-content, which clips the top on overflow. */
@@ -119,12 +74,6 @@
   padding: var(--float-clear) 0;
 }
 
-/* Full width, so the count sits exactly --tree-x in from the right edge — the
-   mirror of where the words start. The measure that used to live here as a
-   max-width moved onto .node__name, which is the only thing long enough to
-   need one; capping the whole tree also capped the right margin, and the
-   number ended up floating in from the edge by a different amount than the
-   word it belonged to. */
 .tree {
   display: block;
   width: 100%;
@@ -132,8 +81,8 @@
   padding: 0 var(--tree-x);
 }
 
-/* One folder and everything under it. The hairline belongs to the group, not
-   to the row, so an open folder is never cut off from its own children. */
+/* One folder and everything under it. The line belongs to the group, not to
+   the row, so an open folder is never cut off from its own children. */
 .branch { padding: var(--tree-gap) 0; }
 .branch + .branch { border-top: var(--hair) solid var(--rule); }
 .branch:first-child { padding-top: 0; }
@@ -153,16 +102,9 @@
 .folder__name {
   flex: 1;
   min-width: 0;
-  font-family: var(--font-display);
-  /* A step up from --t-folder. Ripoff is a hairline face with a small x-height
-     for its em, so at 20px it read as smaller and lighter than the Oxygen
-     leaves beneath it — the opposite of the job. 26 is where it out-weighs
-     them again on presence alone. */
-  font-size: var(--t-title);
-  /* Positive, against every other large size in the app. The face is squared
-     and narrow and its letters lock together at default tracking; opening it
-     up is what makes it read as a display line rather than a logo. */
-  letter-spacing: 0.04em;
+  font-size: var(--t-folder);
+  /* Light type this large drifts apart on its own. */
+  letter-spacing: var(--track-tight);
   line-height: var(--leading-tight);
 }
 
@@ -177,12 +119,16 @@
   margin-right: calc(var(--track-caps) * -1);
 }
 
-/* An open folder recedes: it has become a heading for what's under it rather
-   than a thing you're being offered. Its count comes up to meet it, because
-   now the number is describing what you can actually see. */
-.folder--open { color: var(--ink-2); }
+/* An open folder keeps full ink — it's the heading you're currently reading
+   under, and dimming it read as disabled rather than as context. Its count
+   comes up to meet it, because it now describes what you can see. */
 .folder--open .folder__count { color: var(--ink-2); }
 
+/* ONE LEAF, five folders. An essay, a book and a series are set identically
+   and differ only in what the second line says — see the note in tree.js.
+   Essays used to get a larger title and an inverted order, inherited from
+   the feed this replaced, and the result was that opening the fourth folder
+   changed the type size of the screen. */
 .node {
   display: block;
   width: 100%;
@@ -192,15 +138,15 @@
 }
 .node:active { opacity: 0.5; }
 
-/* A read has nowhere to go. It doesn't press, and it doesn't pretend to. */
+/* A book has nowhere to go. It doesn't press, and it doesn't pretend to. */
 .node--inert { cursor: default; }
 .node--inert:active { opacity: 1; }
 
 .node__name {
   display: block;
-  /* The measure the tree used to carry as a whole. Only a leaf is ever long
-     enough to need one — without it a book title runs the full width of the
-     phone and stops looking like part of the same column as "Library". */
+  /* Only a leaf is ever long enough to need a measure — without it a book
+     title runs the full width of the phone and stops looking like part of the
+     same column as the word above it. */
   max-width: calc(var(--u) * 74);
   font-size: var(--t-row);
   line-height: var(--leading-tight);
@@ -221,27 +167,8 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Marginalia keeps the shape of the old feed: the date sits above the piece
-   as a standing head, and the title is set a size up from the other leaves
-   because in this folder the title is the content, not a label for it. */
-.node--feed { margin-top: var(--stack-lg); }
-
-.node--feed .node__name {
-  font-size: var(--t-body);
-  color: var(--ink);
-  line-height: var(--leading-tight);
-}
-
-.node--feed .node__sub {
-  margin-top: 0;
-  margin-bottom: var(--stack);
-  color: var(--ink-3);
-}
-
-/* A draft, wherever it appears. One ink step back from a published piece, so a
-   folder holding one reads as "and one more, not finished" without needing a
-   badge. Placed after .node--feed deliberately — an unfinished essay is still
-   the feed shape, and this has to win over its full-ink title. */
+/* A draft. One ink step back from a published piece, so a folder holding one
+   reads as "and one more, not finished" without needing a badge. */
 .node--draft .node__name { color: var(--ink-3); }
 .node--draft .node__sub  { color: var(--ink-4); }
 
@@ -249,6 +176,11 @@
    Height is measured in JS then released to auto, so a folder can hold
    anything without a hardcoded max-height lie. Children lift in on a stagger. */
 
+/* No indent. A leaf's first letter lands under its folder's first letter,
+   which it now does by having no padding at all — the marks that used to hang
+   in a column to the left of both of them are gone, so the folder word starts
+   on the margin and so does everything under it. Nothing here is nested one
+   step in; the type size and the ink say which is which. */
 .kids {
   overflow: hidden;
   height: 0;
@@ -267,22 +199,34 @@
    so an open folder reads as one block rather than as a run of loose lines. */
 .kids > .node:first-child { margin-top: var(--stack-lg); }
 
-/* ── Entry list (marginalia, reads) ─────────────────────────────────────────
-   No tags, no filters, no kind badges. A date and a title. */
+/* ── Page head ──────────────────────────────────────────────────────────────
+   One head for every screen that has a title: an essay, a gallery, and the
+   editor that writes the essay. Centred — a title standing over a whole page
+   isn't an item in a column you scan, it's a plate caption. Which is the only
+   way the editor can promise that what you write is what you'll read: it isn't
+   a lookalike of the reader's head, it is the same rules. */
 
-.entry {
-  position: relative;
-  display: block;
-  width: 100%;
-  text-align: left;
+.head {
+  max-width: calc(var(--u) * 168);
+  margin: 0 auto;
   padding: var(--stack-lg) var(--page-x);
-  border-bottom: var(--hair) solid var(--rule);
-  transition: background var(--fast) var(--ease);
+  text-align: center;
 }
-.entry:active { background: var(--wash); }
 
-.entry__date {
-  display: block;
+/* The same word as on the home screen that opened it, eight points larger.
+   That is the whole relationship between the contents page and a page: one is
+   the other's title. */
+.head__title {
+  font-size: var(--t-display);
+  letter-spacing: var(--track-tight);
+  line-height: var(--leading-tight);
+}
+
+/* One line under the title, and every screen puts something different in it: a
+   date, or a count of pieces. The editor puts the marks in the same slot but
+   not in this style — see .marks, which is its own row. */
+.head__meta {
+  margin-top: var(--stack);
   font-size: var(--t-micro);
   letter-spacing: var(--track-caps);
   text-transform: uppercase;
@@ -290,88 +234,55 @@
   font-variant-numeric: tabular-nums;
 }
 
-.entry__title {
-  margin-top: var(--stack);
-  font-size: var(--t-title);
-  letter-spacing: var(--track-tight);
-  line-height: var(--leading-tight);
-}
+/* ── Page body ──────────────────────────────────────────────────────────────
+   What a head introduces. The measure and the side margin live here, once, so
+   the reader and the editor cannot drift apart on either.
 
-.entry__by {
-  margin-top: calc(var(--u) * 1.5);
-  font-size: var(--t-meta);
-  color: var(--ink-3);
-}
-
-.entry__note {
-  margin-top: var(--stack);
-  font-size: var(--t-meta);
-  color: var(--ink-2);
-  line-height: var(--leading);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.entry__thumb {
-  margin-top: var(--stack);
-  width: 100%;
-  aspect-ratio: 3 / 2;
-  object-fit: cover;
-  border-radius: var(--r-1);
-  background: var(--wash);
-}
-
-/* ── Reader ─────────────────────────────────────────────────────────────────
-   The only place with selectable text and a real measure. */
-
-.reader {
-  padding: var(--stack-lg) var(--page-x) calc(var(--stack-lg) * 2);
+   No bottom padding: the scroller it sits in already ends with --float-clear
+   plus --stack-lg, and bottom clearance is paid for exactly once. */
+.page {
   max-width: calc(var(--u) * 168);
   margin: 0 auto;
+  padding: 0 var(--page-x);
   -webkit-user-select: text;
   user-select: text;
 }
+.page > * + * { margin-top: var(--stack-lg); }
 
-.reader__title {
-  font-size: var(--t-display);
-  letter-spacing: var(--track-tight);
-  line-height: var(--leading-tight);
-}
+.page__lead { width: 100%; border-radius: var(--r-1); }
 
-.reader__meta {
-  margin-top: var(--stack-lg);
-  padding-bottom: var(--stack-lg);
-  border-bottom: var(--hair) solid var(--rule);
-  font-size: var(--t-micro);
-  letter-spacing: var(--track-caps);
-  text-transform: uppercase;
-  color: var(--ink-3);
-}
-
-/* Prose. With no bold available, <strong> is expressed by stepping the ink up
-   to full while the body copy sits just below it — emphasis by presence
-   rather than by mass. */
 .prose {
-  margin-top: var(--stack-lg);
   font-size: var(--t-body);
   line-height: var(--leading);
   color: var(--ink-prose);
 }
 .prose > * + * { margin-top: var(--stack-lg); }
 
+/* A heading inside an essay is a title of a smaller thing, so it is the title
+   size a step down — the third and last of them. It sits at full ink against
+   the --ink-prose of the copy, which is what separates it without reaching for
+   a face or a weight the chrome doesn't own. */
 .prose h2 {
   margin-top: calc(var(--stack-lg) * 1.6);
   font-size: var(--t-title);
-  font-weight: var(--w);
   letter-spacing: var(--track-tight);
   line-height: var(--leading-tight);
   color: var(--ink);
 }
 
-.prose strong { font-weight: var(--w); color: var(--ink); }
-.prose em { font-style: italic; }
+/* THE one place in the app that uses the bold face. Emphasis used to be a step
+   up in ink — 84% to 100% — which on a screen is a difference you can measure
+   and cannot see, so pressing Bold appeared to do nothing at all. It's mass
+   now, like everywhere else in the world.
+
+   <b> and <i> are here as well as <strong> and <em>, and that is not
+   belt-and-braces. execCommand writes <b>, and the editor only rewrites it to
+   <strong> on the way to storage — so in the live editor, which is this same
+   stylesheet, the tag under the caret is <b> for as long as you are looking at
+   it. Style one and not the other and Bold still appears to do nothing: the
+   word only thickens later, in the reader, on a screen you aren't on. */
+.prose strong, .prose b { font-weight: var(--w-bold); color: var(--ink); }
+.prose em, .prose i { font-style: italic; }
 
 .prose a {
   color: var(--ink);
@@ -388,6 +299,71 @@
 .prose ul, .prose ol { padding-left: var(--gutter); }
 .prose li + li { margin-top: var(--stack); }
 .prose li::marker { color: var(--ink-3); }
+
+/* ── Checklists ─────────────────────────────────────────────────────────────
+   A <ul data-check> is the same list with its bullets replaced by boxes. Only
+   the marker changes, so a list you started as bullets and converted keeps
+   every item, and the spacing between the two kinds is identical.
+
+   The gutter is calc(--u * 8) — 32px — and editor.js hit-tests taps against
+   the same number. That's the box's whole tap target: the words stay editable,
+   so the caret can still land in the middle of "oat milk". */
+
+.prose ul[data-check] {
+  list-style: none;
+  padding-left: 0;
+}
+
+.prose ul[data-check] > li {
+  position: relative;
+  padding-left: calc(var(--u) * 8);
+  min-height: calc(var(--u) * 6);
+  transition: color var(--fast) var(--ease);
+}
+
+.prose ul[data-check] > li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.22em;
+  width: calc(var(--u) * 4.5);
+  height: calc(var(--u) * 4.5);
+  border: var(--hair) solid var(--rule);
+  border-radius: var(--u);
+  transition: background var(--fast) var(--ease),
+              border-color var(--fast) var(--ease);
+}
+
+.prose ul[data-check] > li[data-done] {
+  color: var(--ink-4);
+  text-decoration: line-through;
+  text-decoration-color: var(--ink-4);
+}
+
+/* Done is an inversion: the box fills with ink and the tick is cut out of it
+   in the page colour. With no accent left, filling is the only move that reads
+   as a state change from across the room — and it's the same move the lit
+   formatting mark and the card's affirmative make, so the app has one gesture
+   for "this one" rather than three. */
+.prose ul[data-check] > li[data-done]::before {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+/* The tick, drawn as two borders of an empty box turned on its corner. Cheaper
+   than an SVG, and drawn in the page colour so it stays cut-out in either
+   theme without knowing which one it's in. */
+.prose ul[data-check] > li[data-done]::after {
+  content: '';
+  position: absolute;
+  left: calc(var(--u) * 1.6);
+  top: 0.42em;
+  width: calc(var(--u) * 1.2);
+  height: calc(var(--u) * 2.4);
+  border: solid var(--void);
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(42deg);
+}
 
 .prose figure { margin: calc(var(--stack-lg) * 1.4) 0; }
 .prose img { width: 100%; border-radius: var(--r-1); }
@@ -410,116 +386,175 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--stack);
-  margin-top: var(--stack-lg);
   padding: var(--stack) var(--gutter);
   border: var(--hair) solid var(--rule);
-  border-radius: var(--r-2);
+  border-radius: var(--r-pill);
   color: var(--ink);
   font-size: var(--t-meta);
   word-break: break-all;
 }
 
 /* ── Editor ─────────────────────────────────────────────────────────────────
-   No header. It should feel like the page, not like a form: the title and body
-   use the exact type of the reader, so writing looks like what you'll read.
+   The editor has no styles of its own worth the name, and that is the whole
+   design. It is .head over .page over .prose — the reader's rules — with
+   contenteditable turned on. There is no preview mode because there is nothing
+   left to preview, and the two screens cannot drift apart because there is
+   only one set of rules to change.
 
-   The whole thing is one scroller rather than a fixed title over a scrolling
-   body. A textarea that scrolls inside a pane fights the webview's own
-   scrolling on iOS and loses the caret behind the keyboard; letting the
-   textarea grow and the page scroll keeps the caret where the browser can see
-   it. --min-h is what stops a two-line draft from having a tiny tap target. */
-
-.editor {
-  padding: var(--stack-lg) var(--page-x) 0;
-  padding-bottom: calc(var(--float-clear) + var(--stack-lg));
-  max-width: calc(var(--u) * 168);
-  width: 100%;
-  margin: 0 auto;
-  -webkit-user-select: text;
-  user-select: text;
-}
+   What's left below is the editing and nothing else: somewhere for a
+   placeholder to hang, room to tap into, and no focus ring — on a full-screen
+   writing surface the caret is the only focus indicator that means anything. */
 
 .editor__title,
 .editor__body {
-  display: block;
-  width: 100%;
-  background: none;
-  border: none;
+  position: relative;
   outline: none;
-  color: var(--ink);
-  font-family: var(--font);
-  font-weight: var(--w);
-  resize: none;
   -webkit-user-select: text;
   user-select: text;
 }
 
-.editor__title {
-  font-size: var(--t-display);
-  letter-spacing: var(--track-tight);
-  line-height: var(--leading-tight);
-  padding-bottom: var(--stack);
-}
+.editor__title { display: block; }
 
-.editor__body {
-  min-height: calc(var(--u) * 60);
-  margin-top: var(--stack-lg);
-  font-size: var(--t-body);
-  line-height: var(--leading);
-  color: var(--ink-prose);
-  /* No inner scrollbar: the page is the scroller. JS keeps the height at the
-     content's height so there is never anything hidden below the fold of it. */
-  overflow: hidden;
-}
+/* Enough to tap into on a two-line draft. */
+.editor__body { min-height: calc(var(--u) * 60); }
 
-.editor__title::placeholder,
-.editor__body::placeholder { color: var(--ink-4); }
-
-.editor__count {
-  margin-top: var(--stack-lg);
-  font-size: var(--t-micro);
-  letter-spacing: var(--track-caps);
-  text-transform: uppercase;
+/* A contenteditable is never :empty — the browser keeps a <br> in it so the
+   caret has somewhere to sit — so emptiness is a class the editor sets, not a
+   selector the CSS can find on its own. Stretched edge to edge rather than
+   pinned left, so it inherits whatever text-align its host has: the title's
+   placeholder centres itself and the body's doesn't. */
+.is-empty::before {
+  content: attr(data-placeholder);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
   color: var(--ink-4);
-  font-variant-numeric: tabular-nums;
+  pointer-events: none;
 }
 
-/* ── The formatting row ─────────────────────────────────────────────────────
-   Four words under the title, in the app's caps-micro. Words rather than a B,
-   an I and a pair of quote marks: a bold "B" is impossible here (the one bold
-   in this app belongs to the tree), so the icon would have had to be a lie
-   about its own weight. Set as labels, they're honest and they're legible at
-   11px, which a hairline glyph isn't. */
+/* ── The marks ──────────────────────────────────────────────────────────────
+   ONE LINE UNDER THE TITLE, and six marks standing on it. It's the head's meta
+   slot: where the reader prints a date, the editor offers the formatting, and
+   the rule is what says the title above it has ended and the tools below it
+   are not part of the piece.
 
-.styles {
+   EVERY MARK IS AN EXAMPLE OF ITSELF. An H in the title face, a bold B, an
+   italic I, a serif “, and drawings of a list and a checklist — so nothing
+   here has to be read to be understood, and none of it has to be translated
+   either. It was six uppercase words in outlined pills, which is a row of
+   labels: you read BOLD, then you pictured bold. Now the button IS the result,
+   at the size and the slope and the weight you'll get.
+
+   No pills, no outlines, nothing at rest but the marks themselves. Six
+   bordered capsules under a title is more chrome than the entire rest of the
+   app puts on any screen, and this is the writing surface — the screen with
+   the strongest claim to having nothing on it.
+
+   The target is bigger than it looks and bigger than it was: a square of
+   --nav-h, the same object the composer is built from, so a mark aimed at
+   mid-sentence with the hand holding the phone is the size of every other
+   thing in the app you aim at. The glyph inside it is small; the button isn't.
+
+   A lit mark still INVERTS — ink disc, page-coloured mark — which is the app's
+   one gesture for "this one", the same move the checkbox and the card's
+   affirmative make. That lit state is the one thing on screen the page itself
+   cannot tell you: with a live body the mark is already visible in the text,
+   so this isn't reporting what the words look like, it's reporting what the
+   NEXT thing you type will be. It has to survive a glance mid-sentence, which
+   a change of colour does not and a filled disc does. */
+
+.marks {
   display: flex;
-  gap: calc(var(--u) * 2);
-  padding: var(--stack) 0;
-  border-top: var(--hair) solid var(--rule);
-  border-bottom: var(--hair) solid var(--rule);
+  justify-content: center;
+  align-items: center;
+  /* Six of them, and they never stack. A row that wraps changes the height of
+     the head, which moves the writing down the screen while you're looking at
+     it — so on a narrow phone the buttons give up a little width to each other
+     instead. They lose padding doing it, never the mark. */
+  flex-wrap: nowrap;
+  gap: var(--u);
+  margin-top: var(--stack);
+  padding-top: var(--u);
+  border-top: var(--hair) solid var(--rule-soft);
 }
 
-.styles__btn {
-  padding: var(--u) calc(var(--u) * 2);
-  font-size: var(--t-micro);
-  letter-spacing: var(--track-caps);
-  text-transform: uppercase;
+.marks__btn {
+  position: relative;
+  flex: 0 1 var(--nav-h);
+  min-width: 0;
+  height: var(--nav-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--ink-3);
-  border-radius: var(--r-pill);
-  transition: color var(--fast) var(--ease), background var(--fast) var(--ease);
+  transition: color var(--fast) var(--ease);
 }
-.styles__btn:active { color: var(--ink); background: var(--wash); }
+.marks__btn:active { color: var(--ink); }
+.marks__btn[aria-pressed="true"] { color: var(--void); }
+
+/* The disc. Inset from the tap target rather than the size of it — the room
+   around a mark is what makes six of them a row instead of a strip, and the
+   thing you're aiming at was never meant to be visible. */
+.marks__btn::before {
+  content: '';
+  position: absolute;
+  inset: calc(var(--u) * 1.5);
+  border-radius: var(--r-pill);
+  transition: background var(--fast) var(--ease);
+}
+.marks__btn[aria-pressed="true"]::before { background: var(--ink); }
+
+/* Positioned, so it paints over the disc — an absolutely positioned ::before
+   otherwise sits on top of in-flow content, and the lit mark would be a black
+   dot with nothing in it. */
+.marks__btn > * { position: relative; }
+
+/* The letters. Each one is the thing it makes, which is why none of them is
+   allowed to be normalised into a uniform row: the B is heavier than the I on
+   purpose, and the H is a different face.
+
+   Set at reading size — this is the size the mark will be applied AT, and a
+   sample of body type shrunk to a label's size stops being a sample. */
+.marks__glyph {
+  font-size: var(--t-body);
+  line-height: 1;
+}
+
+/* The two drawn marks, a touch above the app's 16px icon: they stand beside
+   17px letters here rather than alone in a button. */
+.marks .ic {
+  width: calc(var(--u) * 5);
+  height: calc(var(--u) * 5);
+}
+.marks__glyph--bold   { font-weight: var(--w-bold); }
+.marks__glyph--italic { font-style: italic; }
+
+/* A heading is a step up in size and nothing else, so the button says it the
+   only way it can: an H bigger than the letters beside it. */
+.marks__glyph--heading {
+  font-size: calc(var(--u) * 5.5);
+}
+
+/* A quotation mark sits at cap height, so centring its LINE BOX leaves the
+   glyph hanging off the top of the button. Dropped by eye onto the row the
+   other five sit on. */
+.marks__glyph--quote {
+  font-size: calc(var(--u) * 8);
+  transform: translateY(0.26em);
+}
 
 /* ── Gallery ────────────────────────────────────────────────────────────────
    CSS columns, not JS masonry: the browser packs it, nothing recomputes on
    rotate, and it can't desync from the DOM.
 
-   content-visibility is what makes 145 tiles scroll cleanly in a webview —
-   off-screen tiles skip layout and paint entirely. */
+   content-visibility is what makes two hundred tiles scroll cleanly in a
+   webview — off-screen tiles skip layout and paint entirely.
 
-/* The moodboard ignores --page-x. Everything else in the app hangs off one
-   left margin; this is the one screen where the images ARE the page, so they
-   run to the edge and sit almost butted together. */
+   The wall ignores --page-x. Everything else in the app hangs off one left
+   margin; this is the one screen where the images ARE the page, so they run to
+   the edge and sit almost butted together. */
+
 .board {
   column-count: 2;
   column-gap: var(--tile-gap);
@@ -530,6 +565,7 @@
 @media (min-width: 900px) { .board { column-count: 4; } }
 
 .tile {
+  position: relative;
   break-inside: avoid;
   margin-bottom: var(--tile-gap);
   display: block;
@@ -546,10 +582,13 @@
   background: var(--wash);
 }
 
-.tile--picked img { outline: calc(var(--u) * 0.5) solid var(--ink); }
+/* ── Lightbox ───────────────────────────────────────────────────────────────
+   The same --tile-gap the wall is packed with, and nothing else. An image
+   opened from a near-butted grid should grow into the screen, not into a
+   framed plate.
 
-/* ── Lightbox ───────────────────────────────────────────────────────────── */
-
+   No bar of its own: back and delete are the composer's, lifted over the image
+   for as long as it's up. See borrowComposer in app.js. */
 .lightbox {
   position: fixed;
   inset: 0;
@@ -558,7 +597,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--page-x);
+  padding: var(--tile-gap);
   opacity: 0;
   transition: opacity var(--fast) var(--ease);
 }
@@ -566,61 +605,69 @@
 
 .lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-.lightbox__bar {
-  position: absolute;
-  top: calc(env(safe-area-inset-top, 0px) + var(--stack));
-  left: var(--page-x);
-  right: var(--page-x);
+/* ── Search results ─────────────────────────────────────────────────────────
+   A column of one-line answers, grouped by kind. Rows are flat and close-set —
+   a search result is a thing you scan past on the way to one you stop at, so
+   anything that makes a single row substantial (a card, a thumbnail, a border)
+   makes the list worse. */
+
+.results { padding-top: var(--stack); }
+
+.results__head {
   display: flex;
+  align-items: baseline;
   justify-content: space-between;
-  color: var(--ink-2);
+  gap: var(--gutter);
+  padding: var(--stack-lg) var(--page-x) var(--stack);
 }
-.lightbox__bar button { color: inherit; padding: var(--u); }
+/* Full ink, against the ink-4 count beside it and the ink-4 sub-line under
+   every row below it. The group name is the only thing on this screen that
+   isn't a result, so it's the only thing that gets to be the darkest. */
+.results__head .t-micro { color: var(--ink); }
+.results__count { color: var(--ink-4) !important; font-variant-numeric: tabular-nums; }
 
-/* ── Galleries ──────────────────────────────────────────────────────────────
-   The only centred type in the app. Everything else hangs off one left margin
-   because it's a column of things you scan; a gallery has one title and then
-   it stops being text, so there's no column for it to belong to — and the
-   images below it are a symmetrical field, which a left-aligned title sits
-   awkwardly against. Centred, it reads as a plate caption. */
-
-.workhead {
-  padding: var(--stack-lg) var(--page-x);
-  text-align: center;
+.result {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--stack) var(--page-x);
+  transition: background var(--fast) var(--ease);
 }
+.result:active { background: var(--wash); }
+.result--inert { cursor: default; }
+.result--inert:active { background: none; }
 
-.workhead__title {
-  font-size: var(--t-display);
-  letter-spacing: var(--track-tight);
+.result__name {
+  display: block;
+  font-size: var(--t-row);
   line-height: var(--leading-tight);
+  color: var(--ink);
 }
-.workhead__meta { margin-top: var(--stack); }
 
-/* The literal room for more. Part of the design, not a placeholder waiting to
-   be replaced — it stays after the next series lands. */
-.slot {
-  margin: var(--gutter) var(--page-x) var(--stack-lg);
-  height: calc(var(--u) * 36);
-  border: var(--hair) dashed var(--rule);
-  border-radius: var(--r-2);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--stack);
+.result__sub {
+  display: block;
+  margin-top: calc(var(--u) * 1.5);
+  font-size: var(--t-micro);
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
   color: var(--ink-4);
-  background-image: radial-gradient(var(--dot-ink) var(--dot-size), transparent var(--dot-size));
-  background-size: var(--dot-gap) var(--dot-gap);
-  background-position: center;
 }
 
 /* ── Composer ───────────────────────────────────────────────────────────────
    The app's only chrome. No screen has a header, so this row carries every
-   verb: back, edit, delete, the main action, and ＋.
+   verb — and it is laid out around the hand rather than around the layout.
 
-   No bar, no rule, no reserved strip. The row itself has no background at all;
-   only the pills are opaque, so the page keeps scrolling visibly beneath them
-   and the app reads as one surface with something resting on it. */
+   Back is at the LEFT EDGE because that is where the swipe-back gesture
+   starts. Find and add are at the RIGHT EDGE because that is where a right
+   thumb rests, and the wide slot between them absorbs whatever is left, which
+   is what keeps both ends pinned to their own margin.
+
+   No bar, no rule, no reserved strip — the row itself has no background at
+   all, and the pills are SOLID. They were the page colour at 88% so content
+   stayed faintly visible through them, which over a wall of two hundred
+   photographs meant the bottom row had a different background every time you
+   scrolled. Opaque, they are objects resting on the page; translucent, they
+   were a filter over it. */
 
 .composer {
   position: fixed;
@@ -629,12 +676,19 @@
   z-index: var(--z-nav);
   display: flex;
   align-items: center;
-  gap: var(--stack);
+  gap: calc(var(--u) * 2);
   padding: 0 var(--page-x);
   pointer-events: none;   /* only the pills are hit targets */
   transition: opacity var(--mid) var(--ease), transform var(--mid) var(--ease);
 }
-.composer[hidden] { display: none; }
+
+/* Lent to a full-screen overlay — the lightbox — so back and delete stay where
+   your thumb already expects them. It lifts, and that is all it does: the row
+   used to invert itself here with a difference blend, which meant the one
+   place in the app where you'd want the chrome to be least noticeable was the
+   one place it looked like a different set of buttons. The pills are opaque
+   and the image behind them is already dimmed by the viewer's own ground. */
+.composer--over { z-index: calc(var(--z-lightbox) + 1); }
 
 /* While a card is up, the row that opened it steps aside rather than stacking
    under it — there is only ever one object at the bottom edge. */
@@ -644,37 +698,73 @@
   pointer-events: none;
 }
 
-/* Shared shell for every pill: a blur tinted toward the page so whatever
-   scrolls under them doesn't fight the label, and a hairline to hold the shape
-   where the background matches the pill. */
+/* Shared shell for everything in the row: the page colour, flat, and a sharp
+   outline to hold the shape where the pill and the page match. */
 .composer__morph,
+.composer__search,
 .composer__main {
   pointer-events: auto;
   display: flex;
   align-items: center;
-  height: calc(var(--u) * 11);
+  height: var(--nav-h);
   background: var(--pill);
-  -webkit-backdrop-filter: blur(20px) saturate(1.4);
-  backdrop-filter: blur(20px) saturate(1.4);
   border: var(--hair) solid var(--rule);
   border-radius: var(--r-pill);
   color: var(--ink-2);
   transition: color var(--fast) var(--ease), border-color var(--fast) var(--ease);
 }
 
+/* The wide slot. It claims its flex whether or not anything is in it, which is
+   what holds the icon group against the left margin — a screen with neither
+   tenant is emptier, not rearranged. */
+.composer__slot {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  transition: opacity var(--mid) var(--ease);
+}
+.composer__slot > [data-off] { display: none; }
+
+.composer__search {
+  flex: 1;
+  min-width: 0;
+  gap: var(--stack);
+  padding: 0 var(--gutter);
+}
+.composer__search:focus-within { border-color: var(--ink); }
+.composer__search-ic { color: var(--ink-3); }
+.composer__search:focus-within .composer__search-ic { color: var(--ink); }
+
+.composer__field {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  /* The pill around it already lights its outline on focus, and the engine's
+     own ring is a second rectangle drawn inside a round one. */
+  outline: none;
+  font-size: var(--t-row);
+  color: var(--ink);
+  -webkit-user-select: text;
+  user-select: text;
+}
+.composer__field::placeholder { color: var(--ink-4); }
+/* WebKit draws its own clear button in a type=search and it is not this
+   app's shape. Leaving search is what clears the field — see app.js. */
+.composer__field::-webkit-search-cancel-button { display: none; }
+
 .composer__main {
   flex: 1;
   min-width: 0;
   padding: 0 var(--gutter);
-  /* Left, where the caret used to be when this was a text field. The label
-     sits exactly where the first character of a title would have appeared. */
   text-align: left;
   font-size: var(--t-row);
+  /* Full ink, unlike the icons. This is the screen's one live verb — Publish —
+     and it is the thing the row is asking you to do. */
+  color: var(--ink);
   white-space: nowrap;
   overflow: hidden;
 }
-.composer__main:active { color: var(--ink); border-color: var(--ink-3); }
-.composer__main[hidden] { display: none; }
+.composer__main:active { border-color: var(--ink); }
 
 /* ── The morph ──────────────────────────────────────────────────────────────
    Nothing here appears or disappears. Every button is always in the row and
@@ -683,15 +773,22 @@
    in the layout, and arriving on a gallery reads as the row changing shape
    rather than as a different row.
 
-   That's also why width is animated and not, say, scale: the main pill has to
-   visibly give up the space, which only happens if the space is real. */
+   That's also why width is animated and not, say, scale: the wide slot has to
+   visibly give up the space, which only happens if the space is real.
+
+   A button collapses TOWARD ITS OWN EDGE, which is what the --right modifier
+   is for: the left group eats the gap on its right, the right group eats the
+   gap on its left. Get that backwards and a screen without an edit button
+   drags the whole right-hand pair a gap's width inboard, and the ＋ — the one
+   control the thumb is supposed to find without looking — moves depending on
+   what screen you're on. */
 
 .composer__morph {
   flex: none;
   justify-content: center;
   overflow: hidden;
   width: 0;
-  margin-right: calc(var(--stack) * -1);
+  margin-right: calc(var(--u) * -2);
   border-width: 0;
   opacity: 0;
   transition: width var(--mid) var(--ease), opacity var(--mid) var(--ease),
@@ -699,22 +796,25 @@
               border-color var(--fast) var(--ease);
 }
 
+.composer__morph--right {
+  margin-right: 0;
+  margin-left: calc(var(--u) * -2);
+}
+
 .composer__morph[data-on] {
-  width: calc(var(--u) * 11);
+  width: var(--nav-h);
   margin-right: 0;
   border-width: var(--hair);
   opacity: 1;
 }
+.composer__morph--right[data-on] { margin-left: 0; }
 
-.composer__morph:active { color: var(--ink); border-color: var(--ink-3); }
-
-/* ＋ is last in the row, so it has no gap of its own to eat. */
-.composer__add { margin-right: 0; }
+.composer__morph:active { color: var(--ink); border-color: var(--ink); }
 
 /* ── Card ───────────────────────────────────────────────────────────────────
-   Every question the app asks. It is the composer having grown: same blur,
-   same tint, same hairline, same distance off the bottom edge, sharing the
-   --pill token so the two can never drift apart.
+   Every question the app asks. It is the composer having grown: same fill,
+   same outline, same distance off the bottom edge, sharing the --pill token so
+   the two can never drift apart.
 
    It replaced a bottom sheet. A sheet is a second surface arriving from
    offscreen with its own grip and its own header, and picking a folder for
@@ -745,18 +845,13 @@
 .card__panel {
   overflow: hidden;
   background: var(--pill);
-  -webkit-backdrop-filter: blur(20px) saturate(1.4);
-  backdrop-filter: blur(20px) saturate(1.4);
   border: var(--hair) solid var(--rule);
   /* Not --r-pill: a pill is one line, and a stack of choices with fully round
-     ends would put its first and last rows on a curve. This is the same corner
-     the reader's link block uses, one step up for the larger box. */
-  border-radius: calc(var(--u) * 5);
+     ends would put its first and last rows on a curve. */
+  border-radius: var(--r-2);
 }
 
-.card__head {
-  padding: var(--gutter) var(--gutter) var(--stack);
-}
+.card__head { padding: var(--gutter) var(--gutter) var(--stack); }
 
 .card__list { max-height: 60vh; }
 
@@ -775,7 +870,7 @@
 .card__row:active { background: var(--wash); }
 
 /* The rows are the same 15px as the pill they came out of — this is the
-   "bottom input field" type, not list-item type. */
+   "bottom row" type, not list-item type. */
 .card__name { font-size: var(--t-row); }
 
 .card__meta {
@@ -801,12 +896,15 @@
   font-size: var(--t-row);
   color: var(--ink);
   border-top: var(--hair) solid var(--rule-soft);
+  -webkit-user-select: text;
+  user-select: text;
 }
 .card__field:first-child { border-top: none; }
 .card__field::placeholder { color: var(--ink-4); }
 
-/* The affirmative. Full ink on the page's own colour — the one inverted
-   surface in the app, so there is never a question which row commits. */
+/* The affirmative. Inverted — ink ground, page-coloured word — so there is
+   never a question which row commits. Same gesture as a lit formatting mark
+   and a ticked checkbox: filling is what this app does instead of colouring. */
 .card__go {
   display: block;
   width: 100%;
@@ -833,7 +931,9 @@
   left: 50%;
   bottom: calc(var(--float-clear) + var(--gutter));
   transform: translate(-50%, calc(var(--u) * 3));
-  z-index: var(--z-lightbox);
+  /* Above every other layer. What it reports has usually just happened to the
+     thing you're looking at, and it outlives the card that caused it. */
+  z-index: calc(var(--z-sheet) + 2);
   padding: calc(var(--u) * 3) var(--gutter);
   background: var(--ink);
   color: var(--void);

@@ -58,37 +58,35 @@ export const leaf = (path) => path.split('/').pop();
 /** A display name for a node — its title if it has one, else its slug. */
 export const label = (node) => node.title || leaf(node.path);
 
-/* ── Top bar ────────────────────────────────────────────────────────────────
-   Two shapes only: a root bar (label + right slot) or a pushed bar (back +
-   title + right slot). */
-
-export function topbar({ label: text, back, title, actions }) {
-  const bar = el('header.topbar');
-
-  if (back) {
-    const b = el('button.topbar__back', { 'aria-label': 'Back', onclick: back });
-    b.append(icon('back'));
-    bar.append(b);
-  }
-
-  bar.append(el('span.t-micro.topbar__title', { text: text || title || '' }));
-
-  const right = el('div.topbar__act');
-  for (const a of actions || []) right.append(a);
-  bar.append(right);
-
-  return bar;
-}
-
-export function iconButton(name, aria, onclick) {
-  const b = el('button', { 'aria-label': aria, onclick });
-  b.append(icon(name));
-  return b;
-}
+/* There is no top bar. Every screen's chrome lives in the composer at the
+   bottom edge instead — see dressComposer in app.js — and the last header in
+   the app went when the essays list adopted the shared head below. */
 
 /** A scrolling body region. */
 export function body(...kids) {
   return el('div.body.scroller', {}, ...kids);
+}
+
+/* ── Page head ──────────────────────────────────────────────────────────────
+   The head every titled screen shares: a centred display title and one line of
+   caps-micro under it. An essay puts its date there, a gallery puts the number
+   of pieces, and the editor puts the four formatting marks — same slot, same
+   11px caps, so the three screens keep one rhythm and the editor can promise
+   that what you write is what you'll read.
+
+   `meta` may be a string or an element, which is the whole reason the editor
+   can hang four buttons where the reader hangs a date. */
+export function head(title, meta) {
+  return el('header.head', {},
+    el('h1.head__title', { text: title }),
+    meta === null || meta === undefined || meta === ''
+      ? null
+      : (meta.nodeType ? meta : el('div.head__meta', { text: meta })));
+}
+
+/** The region a head introduces — the measure and the side margin live here. */
+export function page(...kids) {
+  return el('article.page', {}, ...kids);
 }
 
 export function empty(text) {

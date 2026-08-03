@@ -34,7 +34,19 @@ export function resolveSync(path) {
   return `seed/${path}`;
 }
 
-export const isUser = (path) => !!path && path.startsWith('media/user/');
+/* ── Paths inside essay HTML ────────────────────────────────────────────────
+   Different problem from the two above. An <img> inside a stored essay body
+   carries a path relative to the seed folder, because that's where the
+   migration put it; the reader renders it from the app root and the editor
+   writes it back. Both directions have to agree exactly or an essay containing
+   a photo grows a `seed/` on every save.
+
+   Only seed media goes through here. Images can't be inserted into a body from
+   inside the app, so a body never contains a media/user/ path — and if that
+   ever changes, it needs mediaURL() and an await, not a string prefix. */
+
+export const toSrc   = (s) => ((s || '').startsWith('media/') ? `seed/${s}` : (s || ''));
+export const fromSrc = (s) => ((s || '').startsWith('seed/media/') ? s.slice(5) : (s || ''));
 
 /* ── Import ─────────────────────────────────────────────────────────────────
    A data URL in, a stored pair of files out. Everything is re-encoded to JPEG:

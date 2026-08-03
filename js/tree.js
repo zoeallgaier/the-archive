@@ -4,10 +4,28 @@
    Five words in the middle of the screen. Everything else is a consequence of
    tapping one of them.
 
-   No icons, no chevrons, no title over the top. The signals are weight, size,
-   ink, air — and a number at the far right, which is the one piece of
+   No chevrons, no title over the top, AND NO MARKS. The signals are face,
+   size, ink, air — and a number at the far right, which is the one piece of
    information a word can't carry: how much is in there. The archive should
    look like a table of contents, not a file browser.
+
+   Each word used to carry its folder's icon in the left margin, the same
+   drawing the ＋ spent to add to that folder. Both are gone. The ＋ opens a
+   card of the same five names now, so there is no menu left anywhere in the
+   app that had to fit a folder into a button too small for a word — and here
+   there was a word already, at 30px, saying the same thing better. The icon
+   beside it was a second name for something already named, it pushed the whole
+   tree 36px off the margin to make a column for itself, and five little
+   diagrams down the left of a contents page is the file-browser look this
+   screen is against.
+
+   So the words now start on --page-x, the same left edge as the type on every
+   other screen in the app.
+
+   The five words are the archive's own order, loosest to tightest: the things
+   you look at without reading, then the work, then what you read, then what
+   you finished writing, then what you didn't. See FOLDERS in store.js — the
+   words on screen and the folders on disk are deliberately different things.
 
    Each folder and its children are wrapped in one <section.branch>, so the
    hairline between branches is a border on a single element rather than
@@ -74,7 +92,8 @@ function branch(folder, nav) {
 
   const kidsBox = el('div.kids');
   // An empty folder still opens. It says so, rather than looking broken —
-  // braindumps starts life with nothing in it and that's a normal state.
+  // Notes starts life with nothing in it and that's a normal state, and
+  // the ＋ in the corner is how you change that from anywhere in the app.
   if (kids.length) {
     for (const node of kids) kidsBox.append(leaf(node, folder.treat, nav));
   } else {
@@ -101,29 +120,41 @@ function branch(folder, nav) {
 }
 
 /* ── Leaves ─────────────────────────────────────────────────────────────────
-   Every leaf is a title and one dim line. What that line says, whether it
-   comes before or after the title, and whether the row goes anywhere at all,
-   is the whole difference between folders:
+   ONE SHAPE, five folders. Every leaf is a title at --t-row with one line of
+   caps-micro under it, in that order, at that size, whatever it happens to be
+   a leaf of. Essays used to break the pattern — a bigger title with its
+   date standing above it, inherited from the feed this replaced — and the
+   result was that opening the fourth folder changed the type size of the
+   screen. The home screen is a contents page: its job is to make five
+   different kinds of thing look like one list.
 
-     essay  date over title  — the feed shape, a dateline above the piece
-     work   title, year · n  — a series is a body of work with a size
-     read   title, author    — and nothing to open
+   So all that varies between folders is what the second line SAYS, and whether
+   the row goes anywhere:
+
+     essay  the date, or DRAFT
+     work   the year, and how many pieces
+     read   who wrote it, and the day you finished it
 
    Reads are inert on purpose. A book here is a record that it was read, not a
    document: there is no body, no images, no link — a page for one would be the
    same two lines you're already looking at, on a screen of their own. So the
    list IS the content, and the folder holds it.
 
+   Which is exactly why the date belongs on that line. The record is *that you
+   read it*, and a record of an event without its date is half a record. The
+   date shown is the day you finished, not the year of publication: `year` is a
+   fact about the book, `date` is the fact about you, and this is the second
+   kind of list.
+
    An unpublished piece says DRAFT where its date would go. That's the whole
    difference: it's in the tree, it opens, it's yours — it just hasn't been
    dated yet, because the date an essay carries should be the day you decided
-   it was finished, not the day you opened a blank one.
-
-   Nothing else changes between them, so the column keeps one rhythm. */
+   it was finished, not the day you opened a blank one. */
 
 const TREAT = {
-  essay: { first: true, sub: (n) => (n.draft ? 'Draft' : fmtDate(n.date)) },
-  read:  { inert: true, sub: (n) => n.author || '' },
+  essay: { sub: (n) => (n.draft ? 'Draft' : fmtDate(n.date)) },
+  read:  { inert: true, sub: (n) => [n.author, fmtDate(n.date)]
+                                      .filter(Boolean).join(' · ') },
   work:  { sub: (n) => [fmtYear(n.date), n.count && `${n.count} pieces`]
                         .filter(Boolean).join(' · ') },
 };
@@ -132,13 +163,10 @@ function leaf(node, treat, nav) {
   const t = TREAT[treat] || {};
   const text = t.sub ? t.sub(node) : '';
 
-  const name = el('span.node__name', { text: label(node) });
-  const sub = text ? el('span.node__sub', { text }) : null;
-
-  const tag = t.inert ? 'div' : 'button';
-  const row = el(`${tag}.node${t.first ? '.node--feed' : ''}`
+  const row = el(`${t.inert ? 'div' : 'button'}.node`
     + `${t.inert ? '.node--inert' : ''}${node.draft ? '.node--draft' : ''}`, {},
-    ...(t.first ? [sub, name] : [name, sub]));
+    el('span.node__name', { text: label(node) }),
+    text ? el('span.node__sub', { text }) : null);
 
   if (!t.inert) {
     row.addEventListener('click', () => { selectionTick(); nav(routeFor(node)); });

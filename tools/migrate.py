@@ -2,12 +2,13 @@
 """
 Build seed/ — the content the app ships with.
 
-The archive holds four folders:
+The archive holds four folders. The paths are the schema and never change;
+what the app calls them on screen is a label and lives in js/store.js:
 
-  marginalia/  the essays, with their bodies
-  reads/       the books, title and author
-  works/       Metalheart and Recursia
-  moodboard/   145 images
+  moodboard/   the images            — "The Vibe"
+  works/       Metalheart, Recursia  — "Compositions"
+  reads/       the books             — "Library"
+  marginalia/  the essays            — "Marginalia"
 
 The old feed's "finds" (external links) and personal photos are not part of an
 editorial archive and are left out. The photos are not deleted — they're moved
@@ -31,8 +32,20 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 PORTFOLIO = Path("/Users/ty/Documents/_Personal/_ZoeAllgaierWebsite")
-METALHEART = Path("/Users/ty/Documents/metalheart is revived/compositions")
 LIVE = "https://zoeallgaier.com"
+
+# Metalheart comes out of the repo's own art/ folder, which is what .gitignore
+# has always said this script reads from. It used to point at an external
+# "metalheart is revived/compositions" directory that held an early four of the
+# series, so the gallery shipped four pieces while art/metalheart/ held fifteen
+# — including every finished composition made since. The repo is the source of
+# truth for the work; a folder somewhere else on one machine can't be.
+#
+# Recursia still comes from the portfolio because the two candidate folders
+# genuinely differ there: _assets/recursia holds fifteen cleanly named finished
+# pieces, and art/recursia/ is the working directory behind them, full of
+# version suffixes (Ouroboros_v2, algorithmica_v3, TheTide.jpg.png).
+METALHEART = ROOT / "art" / "metalheart"
 
 # The old feed is read straight out of the portfolio repo. The Archive keeps
 # no copy of it — this app is the successor, not a fork of the feed.

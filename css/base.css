@@ -1,17 +1,16 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   BASE — reset, typography roles, and the two texture layers.
+   BASE — reset, the one type role, and the texture layers.
    Reads only from tokens.css. No raw values.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ── Bundled type ───────────────────────────────────────────────────────────
-   Oxygen Light in two subsets, and one display face. ~25KB total. Local files
-   rather than a CDN: the app never touches the network and must render
+   Oxygen in two weights and two subsets, and nothing else. ~32KB total. Local
+   files rather than a CDN: the app never touches the network and must render
    identically in airplane mode. Latin-ext carries the accented names and
    typographic marks the essays actually use.
 
-   There is deliberately no 400 and no 700. If a bold ever appears in this app
-   it will be the browser synthesising one, which is a bug — see the synthesis
-   guard below. */
+   The bold is here for one selector — `.prose strong` — and the guard on
+   <body> below stops the browser synthesising one anywhere else. */
 
 @font-face {
   font-family: 'Oxygen'; font-style: normal; font-weight: 300; font-display: block;
@@ -27,14 +26,18 @@
                  U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
-/* RipoffSTYLE Thin, 2001. The tree on the home screen and nothing else — the
-   whole reason it's here is to make the contents page read as a different kind
-   of object from the pages it opens. 4.6KB, ASCII only, which is all five
-   folder names will ever need; anything outside its coverage falls back to
-   Oxygen rather than to a system face. */
 @font-face {
-  font-family: 'Ripoff'; font-style: normal; font-weight: 400; font-display: block;
-  src: url('../fonts/ripoff-thin.woff2') format('woff2');
+  font-family: 'Oxygen'; font-style: normal; font-weight: 700; font-display: swap;
+  src: url('../fonts/oxygen-700.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+                 U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193,
+                 U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Oxygen'; font-style: normal; font-weight: 700; font-display: swap;
+  src: url('../fonts/oxygen-700-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB,
+                 U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
 /* ── Reset ──────────────────────────────────────────────────────────────── */
@@ -68,10 +71,10 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* The guard that keeps the one-weight rule honest. Only Oxygen Light is
-     loaded, so any bold in the app would be the browser faking one — this
-     forbids that outright. Style synthesis stays ON, because the essays use
-     italics for book and film titles and Oxygen ships no true italic. */
+  /* Two real weights are loaded, so nothing here needs faking. Synthesis stays
+     off for weight — a synthesised 700 next to the real one is visibly wrong —
+     and on for style, because the essays italicise book and film titles and
+     Oxygen ships no true italic. */
   font-synthesis: style;
   /* Text selection is a desktop affordance and it fights every long-press
      gesture in the app. Re-enabled per-element on reading copy only. */
@@ -80,12 +83,9 @@ body {
   overscroll-behavior: none;
 }
 
-/* The browser sets font-weight:bold on headings, <strong>, <b> and <th> by
-   default. font-synthesis:none-for-weight already stops those from rendering
-   as a fake bold, but leaving the declared weight at 700 means the day anyone
-   adds a bold face to this file, every essay title and every emphasised word
-   silently changes. Kept as a belt-and-braces rule for exactly that reason —
-   it cost one line and it caught this once already. */
+/* The browser sets font-weight:bold on headings, <strong>, <b> and <th>. Only
+   prose is allowed the bold face — everywhere else in this app hierarchy is
+   size and ink, and a heading that quietly went 700 would break the scale. */
 h1, h2, h3, h4, h5, h6, b, strong, th { font-weight: var(--w); }
 
 img { display: block; max-width: 100%; border-style: none; }
@@ -104,16 +104,11 @@ button { cursor: pointer; }
 
 a { color: inherit; text-decoration: none; }
 
-/* ── Type roles ─────────────────────────────────────────────────────────────
-   Everything in the app is one of these. They differ by SIZE and by how much
-   ink they're allowed — never by weight, because there is only one weight.
-
-   Note the pairing: as size goes up, tracking goes negative and colour goes to
-   full ink; as size goes down, tracking opens up and colour recedes. That
-   inverse relationship is what reads as hierarchy in a single-weight setting.
-   None of these roles changes face or weight; the tree is the only thing in
-   the app that does either. */
-
+/* The one type role that earns a class. Everything else in the app is set by
+   the component that owns it — a shelf of .t-* utilities existed here for a
+   while and only ever had one caller each, which is a token pretending to be a
+   class. Caps micro is the exception because it genuinely appears in six
+   unrelated places and has to be identical in all of them. */
 .t-micro {
   font-size: var(--t-micro);
   letter-spacing: var(--track-caps);
@@ -122,35 +117,7 @@ a { color: inherit; text-decoration: none; }
   line-height: var(--leading-tight);
 }
 
-.t-meta {
-  font-size: var(--t-meta);
-  color: var(--ink-2);
-  line-height: var(--leading-tight);
-}
-
-.t-body {
-  font-size: var(--t-body);
-  line-height: var(--leading);
-}
-
-.t-row {
-  font-size: var(--t-row);
-  line-height: var(--leading-tight);
-}
-
-.t-title {
-  font-size: var(--t-title);
-  letter-spacing: var(--track-tight);
-  line-height: var(--leading-tight);
-}
-
-.t-display {
-  font-size: var(--t-display);
-  letter-spacing: var(--track-tight);
-  line-height: var(--leading-tight);
-}
-
-/* ── Texture 1: grain ───────────────────────────────────────────────────────
+/* ── Texture: grain ─────────────────────────────────────────────────────────
    One fixed element over the entire app, generated by feTurbulence in an
    inline SVG data URI so it costs no request and no image file. It is the
    topmost layer in the app and is never interactive.
@@ -166,33 +133,11 @@ a { color: inherit; text-decoration: none; }
   opacity: var(--grain);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size: 200px 200px;
-  /* Additive on black so it lifts the void; subtractive on paper so it settles
-     into it. Same layer, opposite arithmetic — see tokens.css. */
+  /* Additive on the dark surface so it lifts it; subtractive on the light one
+     so it settles into it. Same layer, opposite arithmetic — see tokens.css. */
   mix-blend-mode: var(--grain-blend);
   /* Promote to its own layer once, so scrolling underneath never repaints it. */
   will-change: transform;
-}
-
-/* ── Texture 2: dot grid ────────────────────────────────────────────────────
-   A banding device, not a background. Applied to specific surfaces (now
-   reading, empty slots, section breaks) where the page needs to feel like
-   graph paper. Driven entirely by tokens so the density is tunable. */
-
-.dotgrid {
-  background-image: radial-gradient(var(--dot-ink) var(--dot-size), transparent var(--dot-size));
-  background-size: var(--dot-gap) var(--dot-gap);
-  background-position: center;
-}
-
-/* ── Hairlines ──────────────────────────────────────────────────────────────
-   A real 1px line on a 3x display, not a scaled-up 3px one. */
-
-.rule    { border-bottom: var(--hair) solid var(--rule); }
-.rule-top{ border-top:    var(--hair) solid var(--rule); }
-
-@media (min-resolution: 2dppx) {
-  .rule    { border-bottom-width: 0.5px; }
-  .rule-top{ border-top-width:    0.5px; }
 }
 
 /* ── Motion preference ────────────────────────────────────────────────────── */

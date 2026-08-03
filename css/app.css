@@ -1,0 +1,841 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   APP — tree, reader, editor, gallery, nav.
+
+   Reads only from tokens.css. One weight throughout; where you'd normally
+   expect a bold, look for a size jump or a step up in ink instead.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Shell ──────────────────────────────────────────────────────────────── */
+
+/* Every view runs edge to edge. The composer floats over the bottom of it
+   rather than sitting in a reserved strip, so content passes underneath and
+   the screen reads as one surface. --float-clear buys back the room. */
+.view {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--void);
+}
+
+/* No view has a header any more. `view--bare` is the acknowledgement of that:
+   it buys back the notch clearance the top bar used to pay for. Every view's
+   chrome lives in the composer instead — see dressComposer in app.js. */
+
+.ic {
+  width: calc(var(--u) * 4);
+  height: calc(var(--u) * 4);
+  display: block;
+  flex: none;
+}
+
+/* ── Top bar ────────────────────────────────────────────────────────────────
+   One line of caps-micro and nothing else. No title, no subtitle. */
+
+.topbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--stack);
+  height: var(--row-h);
+  padding: 0 var(--page-x);
+  padding-top: env(safe-area-inset-top, 0px);
+  box-sizing: content-box;
+  border-bottom: var(--hair) solid var(--rule);
+  background: var(--void);
+}
+
+.topbar__back {
+  display: flex;
+  align-items: center;
+  margin-left: calc(var(--u) * -2);
+  padding: var(--u) calc(var(--u) * 2);
+  color: var(--ink-3);
+  transition: color var(--fast) var(--ease);
+}
+.topbar__back:active { color: var(--ink); }
+
+.topbar__title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.topbar__act {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 3);
+  color: var(--ink-3);
+  margin-right: calc(var(--u) * -1);
+}
+.topbar__act button { color: inherit; padding: var(--u); }
+.topbar__act button:active { color: var(--ink); }
+.topbar__act .danger:active { color: var(--ink); }
+
+/* ── Scroll body ────────────────────────────────────────────────────────── */
+
+.body {
+  flex: 1;
+  min-height: 0;
+  padding-bottom: calc(var(--float-clear) + var(--stack-lg));
+}
+
+/* A screen with no top bar still owes the notch its room — the bar was the
+   only thing paying it. */
+.view--bare > .body {
+  padding-top: calc(env(safe-area-inset-top, 0px) + var(--stack));
+}
+
+/* ── File tree ──────────────────────────────────────────────────────────────
+   One margin on the left, the same margin on the right, top to bottom. No
+   title over it — the app has one home screen and you are looking at it, so a
+   wordmark could only tell you what you already know.
+
+     folder   20px BOLD, full ink    count  11px, 34% ink, hard right
+     leaf     15px light, 60% ink
+     sub      11px light, 24% ink, caps
+
+   This is the only place in the app with a bold, and it is what makes the five
+   words read as the contents page rather than as the first five rows of a
+   list. See the doctrine at the top of tokens.css before using it elsewhere.
+
+   Indentation is gone. With only two levels there is nothing for an indent to
+   disambiguate, and the shared left edge does more for the grid than a step
+   would: every line in the app starts at the same x.
+
+   The count is the one thing allowed on the right, and it hangs off the same
+   --tree-x the words start from, so the row is a measured column and not a
+   word with a number drifting somewhere after it. */
+
+/* Vertically centres a short tree and scrolls a tall one. margin:auto on the
+   flex child rather than justify-content, which clips the top on overflow. */
+.body--center {
+  display: flex;
+  flex-direction: column;
+  padding: var(--float-clear) 0;
+}
+
+/* Full width, so the count sits exactly --tree-x in from the right edge — the
+   mirror of where the words start. The measure that used to live here as a
+   max-width moved onto .node__name, which is the only thing long enough to
+   need one; capping the whole tree also capped the right margin, and the
+   number ended up floating in from the edge by a different amount than the
+   word it belonged to. */
+.tree {
+  display: block;
+  width: 100%;
+  margin: auto 0;
+  padding: 0 var(--tree-x);
+}
+
+/* One folder and everything under it. The hairline belongs to the group, not
+   to the row, so an open folder is never cut off from its own children. */
+.branch { padding: var(--tree-gap) 0; }
+.branch + .branch { border-top: var(--hair) solid var(--rule); }
+.branch:first-child { padding-top: 0; }
+.branch:last-child { padding-bottom: 0; }
+
+.folder {
+  display: flex;
+  align-items: baseline;
+  gap: var(--gutter);
+  width: 100%;
+  text-align: left;
+  color: var(--ink);
+  transition: opacity var(--fast) var(--ease);
+}
+.folder:active { opacity: 0.5; }
+
+.folder__name {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--t-folder);
+  font-weight: var(--w-bold);
+  /* Bold at this size closes up on its own, so it gets less negative tracking
+     than the Light does — the display sizes elsewhere keep --track-tight. */
+  letter-spacing: -0.005em;
+  line-height: var(--leading-tight);
+}
+
+.folder__count {
+  flex: none;
+  font-size: var(--t-micro);
+  letter-spacing: var(--track-caps);
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+  /* --track-caps adds a trailing space after the last digit that optical
+     alignment doesn't want; pull it back so the numeral sits on the margin. */
+  margin-right: calc(var(--track-caps) * -1);
+}
+
+/* An open folder recedes: it has become a heading for what's under it rather
+   than a thing you're being offered. Its count comes up to meet it, because
+   now the number is describing what you can actually see. */
+.folder--open { color: var(--ink-2); }
+.folder--open .folder__count { color: var(--ink-2); }
+
+.node {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0;
+  margin-top: var(--node-gap);
+}
+.node:active { opacity: 0.5; }
+
+/* A read has nowhere to go. It doesn't press, and it doesn't pretend to. */
+.node--inert { cursor: default; }
+.node--inert:active { opacity: 1; }
+
+.node__name {
+  display: block;
+  /* The measure the tree used to carry as a whole. Only a leaf is ever long
+     enough to need one — without it a book title runs the full width of the
+     phone and stops looking like part of the same column as "Library". */
+  max-width: calc(var(--u) * 74);
+  font-size: var(--t-row);
+  line-height: var(--leading-tight);
+  color: var(--ink-2);
+}
+
+/* An empty folder that has been opened. Set as a leaf so the row keeps the
+   column's rhythm, but at placeholder ink so it can't be mistaken for one. */
+.node__name--void { color: var(--ink-4); }
+
+.node__sub {
+  display: block;
+  margin-top: calc(var(--u) * 1.5);
+  font-size: var(--t-micro);
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--ink-4);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Marginalia keeps the shape of the old feed: the date sits above the piece
+   as a standing head, and the title is set a size up from the other leaves
+   because in this folder the title is the content, not a label for it. */
+.node--feed { margin-top: var(--stack-lg); }
+
+.node--feed .node__name {
+  font-size: var(--t-body);
+  color: var(--ink);
+  line-height: var(--leading-tight);
+}
+
+.node--feed .node__sub {
+  margin-top: 0;
+  margin-bottom: var(--stack);
+  color: var(--ink-3);
+}
+
+/* A draft, wherever it appears. One ink step back from a published piece, so a
+   folder holding one reads as "and one more, not finished" without needing a
+   badge. Placed after .node--feed deliberately — an unfinished essay is still
+   the feed shape, and this has to win over its full-ink title. */
+.node--draft .node__name { color: var(--ink-3); }
+.node--draft .node__sub  { color: var(--ink-4); }
+
+/* ── Fluid expansion ────────────────────────────────────────────────────────
+   Height is measured in JS then released to auto, so a folder can hold
+   anything without a hardcoded max-height lie. Children lift in on a stagger. */
+
+.kids {
+  overflow: hidden;
+  height: 0;
+  transition: height var(--mid) var(--ease);
+}
+.kids--open { height: auto; overflow: visible; }
+
+.kids > * {
+  opacity: 0;
+  transform: translateY(calc(var(--u) * -1));
+  transition: opacity var(--mid) var(--ease), transform var(--mid) var(--ease);
+}
+.kids--in > * { opacity: 1; transform: none; }
+
+/* The first leaf sits closer to its folder than folders sit to each other,
+   so an open folder reads as one block rather than as a run of loose lines. */
+.kids > .node:first-child { margin-top: var(--stack-lg); }
+
+/* ── Entry list (marginalia, reads) ─────────────────────────────────────────
+   No tags, no filters, no kind badges. A date and a title. */
+
+.entry {
+  position: relative;
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--stack-lg) var(--page-x);
+  border-bottom: var(--hair) solid var(--rule);
+  transition: background var(--fast) var(--ease);
+}
+.entry:active { background: var(--wash); }
+
+.entry__date {
+  display: block;
+  font-size: var(--t-micro);
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.entry__title {
+  margin-top: var(--stack);
+  font-size: var(--t-title);
+  letter-spacing: var(--track-tight);
+  line-height: var(--leading-tight);
+}
+
+.entry__by {
+  margin-top: calc(var(--u) * 1.5);
+  font-size: var(--t-meta);
+  color: var(--ink-3);
+}
+
+.entry__note {
+  margin-top: var(--stack);
+  font-size: var(--t-meta);
+  color: var(--ink-2);
+  line-height: var(--leading);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.entry__thumb {
+  margin-top: var(--stack);
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  border-radius: var(--r-1);
+  background: var(--wash);
+}
+
+/* ── Reader ─────────────────────────────────────────────────────────────────
+   The only place with selectable text and a real measure. */
+
+.reader {
+  padding: var(--stack-lg) var(--page-x) calc(var(--stack-lg) * 2);
+  max-width: calc(var(--u) * 168);
+  margin: 0 auto;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.reader__title {
+  font-size: var(--t-display);
+  letter-spacing: var(--track-tight);
+  line-height: var(--leading-tight);
+}
+
+.reader__meta {
+  margin-top: var(--stack-lg);
+  padding-bottom: var(--stack-lg);
+  border-bottom: var(--hair) solid var(--rule);
+  font-size: var(--t-micro);
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* Prose. With no bold available, <strong> is expressed by stepping the ink up
+   to full while the body copy sits just below it — emphasis by presence
+   rather than by mass. */
+.prose {
+  margin-top: var(--stack-lg);
+  font-size: var(--t-body);
+  line-height: var(--leading);
+  color: var(--ink-prose);
+}
+.prose > * + * { margin-top: var(--stack-lg); }
+
+.prose h2 {
+  margin-top: calc(var(--stack-lg) * 1.6);
+  font-size: var(--t-title);
+  font-weight: var(--w);
+  letter-spacing: var(--track-tight);
+  line-height: var(--leading-tight);
+  color: var(--ink);
+}
+
+.prose strong { font-weight: var(--w); color: var(--ink); }
+.prose em { font-style: italic; }
+
+.prose a {
+  color: var(--ink);
+  border-bottom: var(--hair) solid var(--ink-3);
+}
+
+.prose blockquote {
+  margin-left: 0;
+  padding-left: var(--gutter);
+  border-left: var(--hair) solid var(--rule);
+  color: var(--ink-2);
+}
+
+.prose ul, .prose ol { padding-left: var(--gutter); }
+.prose li + li { margin-top: var(--stack); }
+.prose li::marker { color: var(--ink-3); }
+
+.prose figure { margin: calc(var(--stack-lg) * 1.4) 0; }
+.prose img { width: 100%; border-radius: var(--r-1); }
+.prose figcaption {
+  margin-top: var(--stack);
+  font-size: var(--t-micro);
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.prose hr {
+  border: none;
+  border-top: var(--hair) solid var(--rule);
+  margin: calc(var(--stack-lg) * 1.4) 0;
+}
+
+.gotolink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--stack);
+  margin-top: var(--stack-lg);
+  padding: var(--stack) var(--gutter);
+  border: var(--hair) solid var(--rule);
+  border-radius: var(--r-2);
+  color: var(--ink);
+  font-size: var(--t-meta);
+  word-break: break-all;
+}
+
+/* ── Editor ─────────────────────────────────────────────────────────────────
+   No header. It should feel like the page, not like a form: the title and body
+   use the exact type of the reader, so writing looks like what you'll read.
+
+   The whole thing is one scroller rather than a fixed title over a scrolling
+   body. A textarea that scrolls inside a pane fights the webview's own
+   scrolling on iOS and loses the caret behind the keyboard; letting the
+   textarea grow and the page scroll keeps the caret where the browser can see
+   it. --min-h is what stops a two-line draft from having a tiny tap target. */
+
+.editor {
+  padding: var(--stack-lg) var(--page-x) 0;
+  padding-bottom: calc(var(--float-clear) + var(--stack-lg));
+  max-width: calc(var(--u) * 168);
+  width: 100%;
+  margin: 0 auto;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.editor__title,
+.editor__body {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--ink);
+  font-family: var(--font);
+  font-weight: var(--w);
+  resize: none;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.editor__title {
+  font-size: var(--t-display);
+  letter-spacing: var(--track-tight);
+  line-height: var(--leading-tight);
+  padding-bottom: var(--stack);
+}
+
+.editor__body {
+  min-height: calc(var(--u) * 60);
+  margin-top: var(--stack-lg);
+  font-size: var(--t-body);
+  line-height: var(--leading);
+  color: var(--ink-prose);
+  /* No inner scrollbar: the page is the scroller. JS keeps the height at the
+     content's height so there is never anything hidden below the fold of it. */
+  overflow: hidden;
+}
+
+.editor__title::placeholder,
+.editor__body::placeholder { color: var(--ink-4); }
+
+.editor__count {
+  margin-top: var(--stack-lg);
+  font-size: var(--t-micro);
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--ink-4);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── The formatting row ─────────────────────────────────────────────────────
+   Four words under the title, in the app's caps-micro. Words rather than a B,
+   an I and a pair of quote marks: a bold "B" is impossible here (the one bold
+   in this app belongs to the tree), so the icon would have had to be a lie
+   about its own weight. Set as labels, they're honest and they're legible at
+   11px, which a hairline glyph isn't. */
+
+.styles {
+  display: flex;
+  gap: calc(var(--u) * 2);
+  padding: var(--stack) 0;
+  border-top: var(--hair) solid var(--rule);
+  border-bottom: var(--hair) solid var(--rule);
+}
+
+.styles__btn {
+  padding: var(--u) calc(var(--u) * 2);
+  font-size: var(--t-micro);
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--ink-3);
+  border-radius: var(--r-pill);
+  transition: color var(--fast) var(--ease), background var(--fast) var(--ease);
+}
+.styles__btn:active { color: var(--ink); background: var(--wash); }
+
+/* ── Gallery ────────────────────────────────────────────────────────────────
+   CSS columns, not JS masonry: the browser packs it, nothing recomputes on
+   rotate, and it can't desync from the DOM.
+
+   content-visibility is what makes 145 tiles scroll cleanly in a webview —
+   off-screen tiles skip layout and paint entirely. */
+
+/* The moodboard ignores --page-x. Everything else in the app hangs off one
+   left margin; this is the one screen where the images ARE the page, so they
+   run to the edge and sit almost butted together. */
+.board {
+  column-count: 2;
+  column-gap: var(--tile-gap);
+  padding: var(--tile-gap);
+}
+
+@media (min-width: 560px) { .board { column-count: 3; } }
+@media (min-width: 900px) { .board { column-count: 4; } }
+
+.tile {
+  break-inside: avoid;
+  margin-bottom: var(--tile-gap);
+  display: block;
+  width: 100%;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 300px;
+}
+
+.tile img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--r-1);
+  background: var(--wash);
+}
+
+.tile--picked img { outline: calc(var(--u) * 0.5) solid var(--ink); }
+
+/* ── Lightbox ───────────────────────────────────────────────────────────── */
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-lightbox);
+  background: var(--void);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--page-x);
+  opacity: 0;
+  transition: opacity var(--fast) var(--ease);
+}
+.lightbox--in { opacity: 1; }
+
+.lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+.lightbox__bar {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + var(--stack));
+  left: var(--page-x);
+  right: var(--page-x);
+  display: flex;
+  justify-content: space-between;
+  color: var(--ink-2);
+}
+.lightbox__bar button { color: inherit; padding: var(--u); }
+
+/* ── Galleries ──────────────────────────────────────────────────────────────
+   The only centred type in the app. Everything else hangs off one left margin
+   because it's a column of things you scan; a gallery has one title and then
+   it stops being text, so there's no column for it to belong to — and the
+   images below it are a symmetrical field, which a left-aligned title sits
+   awkwardly against. Centred, it reads as a plate caption. */
+
+.workhead {
+  padding: var(--stack-lg) var(--page-x);
+  text-align: center;
+}
+
+.workhead__title {
+  font-size: var(--t-display);
+  letter-spacing: var(--track-tight);
+  line-height: var(--leading-tight);
+}
+.workhead__meta { margin-top: var(--stack); }
+
+/* The literal room for more. Part of the design, not a placeholder waiting to
+   be replaced — it stays after the next series lands. */
+.slot {
+  margin: var(--gutter) var(--page-x) var(--stack-lg);
+  height: calc(var(--u) * 36);
+  border: var(--hair) dashed var(--rule);
+  border-radius: var(--r-2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--stack);
+  color: var(--ink-4);
+  background-image: radial-gradient(var(--dot-ink) var(--dot-size), transparent var(--dot-size));
+  background-size: var(--dot-gap) var(--dot-gap);
+  background-position: center;
+}
+
+/* ── Composer ───────────────────────────────────────────────────────────────
+   The app's only chrome. No screen has a header, so this row carries every
+   verb: back, edit, delete, the main action, and ＋.
+
+   No bar, no rule, no reserved strip. The row itself has no background at all;
+   only the pills are opaque, so the page keeps scrolling visibly beneath them
+   and the app reads as one surface with something resting on it. */
+
+.composer {
+  position: fixed;
+  left: 0; right: 0;
+  bottom: calc(var(--gutter) + env(safe-area-inset-bottom, 0px));
+  z-index: var(--z-nav);
+  display: flex;
+  align-items: center;
+  gap: var(--stack);
+  padding: 0 var(--page-x);
+  pointer-events: none;   /* only the pills are hit targets */
+  transition: opacity var(--mid) var(--ease), transform var(--mid) var(--ease);
+}
+.composer[hidden] { display: none; }
+
+/* While a card is up, the row that opened it steps aside rather than stacking
+   under it — there is only ever one object at the bottom edge. */
+.composer--away {
+  opacity: 0;
+  transform: translateY(calc(var(--u) * 3));
+  pointer-events: none;
+}
+
+/* Shared shell for every pill: a blur tinted toward the page so whatever
+   scrolls under them doesn't fight the label, and a hairline to hold the shape
+   where the background matches the pill. */
+.composer__morph,
+.composer__main {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  height: calc(var(--u) * 11);
+  background: var(--pill);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  backdrop-filter: blur(20px) saturate(1.4);
+  border: var(--hair) solid var(--rule);
+  border-radius: var(--r-pill);
+  color: var(--ink-2);
+  transition: color var(--fast) var(--ease), border-color var(--fast) var(--ease);
+}
+
+.composer__main {
+  flex: 1;
+  min-width: 0;
+  padding: 0 var(--gutter);
+  /* Left, where the caret used to be when this was a text field. The label
+     sits exactly where the first character of a title would have appeared. */
+  text-align: left;
+  font-size: var(--t-row);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.composer__main:active { color: var(--ink); border-color: var(--ink-3); }
+.composer__main[hidden] { display: none; }
+
+/* ── The morph ──────────────────────────────────────────────────────────────
+   Nothing here appears or disappears. Every button is always in the row and
+   the ones the screen doesn't need are collapsed to zero width, with no border
+   and a negative margin that eats the flex gap — so there's no ghost of them
+   in the layout, and arriving on a gallery reads as the row changing shape
+   rather than as a different row.
+
+   That's also why width is animated and not, say, scale: the main pill has to
+   visibly give up the space, which only happens if the space is real. */
+
+.composer__morph {
+  flex: none;
+  justify-content: center;
+  overflow: hidden;
+  width: 0;
+  margin-right: calc(var(--stack) * -1);
+  border-width: 0;
+  opacity: 0;
+  transition: width var(--mid) var(--ease), opacity var(--mid) var(--ease),
+              margin var(--mid) var(--ease), color var(--fast) var(--ease),
+              border-color var(--fast) var(--ease);
+}
+
+.composer__morph[data-on] {
+  width: calc(var(--u) * 11);
+  margin-right: 0;
+  border-width: var(--hair);
+  opacity: 1;
+}
+
+.composer__morph:active { color: var(--ink); border-color: var(--ink-3); }
+
+/* ＋ is last in the row, so it has no gap of its own to eat. */
+.composer__add { margin-right: 0; }
+
+/* ── Card ───────────────────────────────────────────────────────────────────
+   Every question the app asks. It is the composer having grown: same blur,
+   same tint, same hairline, same distance off the bottom edge, sharing the
+   --pill token so the two can never drift apart.
+
+   It replaced a bottom sheet. A sheet is a second surface arriving from
+   offscreen with its own grip and its own header, and picking a folder for
+   three photos did not warrant leaving the page to do it. */
+
+.card-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-sheet);
+  background: var(--scrim);
+  opacity: 0;
+  transition: opacity var(--mid) var(--ease);
+}
+.card-scrim--in { opacity: 1; }
+
+.card {
+  position: fixed;
+  left: 0; right: 0;
+  bottom: calc(var(--gutter) + env(safe-area-inset-bottom, 0px));
+  z-index: calc(var(--z-sheet) + 1);
+  padding: 0 var(--page-x);
+  opacity: 0;
+  transform: translateY(calc(var(--u) * 4));
+  transition: opacity var(--mid) var(--ease), transform var(--mid) var(--ease);
+}
+.card--in { opacity: 1; transform: none; }
+
+.card__panel {
+  overflow: hidden;
+  background: var(--pill);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  backdrop-filter: blur(20px) saturate(1.4);
+  border: var(--hair) solid var(--rule);
+  /* Not --r-pill: a pill is one line, and a stack of choices with fully round
+     ends would put its first and last rows on a curve. This is the same corner
+     the reader's link block uses, one step up for the larger box. */
+  border-radius: calc(var(--u) * 5);
+}
+
+.card__head {
+  padding: var(--gutter) var(--gutter) var(--stack);
+}
+
+.card__list { max-height: 60vh; }
+
+.card__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--gutter);
+  width: 100%;
+  padding: var(--stack) var(--gutter);
+  min-height: calc(var(--u) * 12);
+  text-align: left;
+  color: var(--ink);
+  transition: background var(--fast) var(--ease);
+}
+.card__row:active { background: var(--wash); }
+
+/* The rows are the same 15px as the pill they came out of — this is the
+   "bottom input field" type, not list-item type. */
+.card__name { font-size: var(--t-row); }
+
+.card__meta {
+  flex: none;
+  font-size: var(--t-micro);
+  letter-spacing: var(--track-caps);
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.card__say {
+  padding: var(--stack) var(--gutter) var(--gutter);
+  font-size: var(--t-row);
+  line-height: var(--leading);
+  color: var(--ink-2);
+}
+
+.card__field {
+  display: block;
+  width: 100%;
+  padding: var(--stack) var(--gutter);
+  min-height: calc(var(--u) * 12);
+  font-size: var(--t-row);
+  color: var(--ink);
+  border-top: var(--hair) solid var(--rule-soft);
+}
+.card__field:first-child { border-top: none; }
+.card__field::placeholder { color: var(--ink-4); }
+
+/* The affirmative. Full ink on the page's own colour — the one inverted
+   surface in the app, so there is never a question which row commits. */
+.card__go {
+  display: block;
+  width: 100%;
+  padding: var(--gutter);
+  background: var(--ink);
+  color: var(--void);
+  font-size: var(--t-micro);
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  transition: opacity var(--fast) var(--ease);
+}
+.card__go:active { opacity: 0.7; }
+
+/* ── States ─────────────────────────────────────────────────────────────── */
+
+.empty {
+  padding: calc(var(--stack-lg) * 2) var(--page-x);
+  text-align: center;
+  color: var(--ink-4);
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--float-clear) + var(--gutter));
+  transform: translate(-50%, calc(var(--u) * 3));
+  z-index: var(--z-lightbox);
+  padding: calc(var(--u) * 3) var(--gutter);
+  background: var(--ink);
+  color: var(--void);
+  border-radius: var(--r-pill);
+  font-size: var(--t-micro);
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--fast) var(--ease), transform var(--fast) var(--ease);
+}
+.toast--in { opacity: 1; transform: translate(-50%, 0); }

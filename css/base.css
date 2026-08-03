@@ -1,0 +1,226 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   BASE — reset, typography roles, and the two texture layers.
+   Reads only from tokens.css. No raw values.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Oxygen, bundled ────────────────────────────────────────────────────────
+   Two weights, two subsets each, ~32KB total. Local files rather than Google's
+   CDN: the app never touches the network and must render identically in
+   airplane mode. Latin-ext carries the accented names and typographic marks
+   the essays actually use.
+
+   There is deliberately no 400. The 700 is loaded for one selector — the tree
+   on the home screen — and the gap between it and the Light is the whole
+   point; a middle weight would blur the single distinction the app makes with
+   mass instead of size. Every 700 here is real, never synthesised; see the
+   synthesis guard below. */
+
+@font-face {
+  font-family: 'Oxygen'; font-style: normal; font-weight: 300; font-display: block;
+  src: url('../fonts/oxygen-300.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+                 U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193,
+                 U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Oxygen'; font-style: normal; font-weight: 300; font-display: block;
+  src: url('../fonts/oxygen-300-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB,
+                 U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Oxygen'; font-style: normal; font-weight: 700; font-display: block;
+  src: url('../fonts/oxygen-700.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+                 U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193,
+                 U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Oxygen'; font-style: normal; font-weight: 700; font-display: block;
+  src: url('../fonts/oxygen-700-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB,
+                 U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* ── Reset ──────────────────────────────────────────────────────────────── */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+* {
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  background: var(--void);
+  /* Lock the page. The app scrolls inside its views, never as a document —
+     this is what stops the whole UI rubber-banding like a web page. */
+  height: 100%;
+  overflow: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--void);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: var(--t-body);
+  font-weight: var(--w);
+  line-height: var(--leading);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Weight synthesis stays off. Both weights are real files, so a faked bold
+     could only ever be a mistake — something reaching for a 500 that doesn't
+     exist, or a <strong> that should have been ink. Style synthesis stays ON,
+     because the essays use italics for book and film titles and Oxygen ships
+     no true italic. */
+  font-synthesis: style;
+  /* Text selection is a desktop affordance and it fights every long-press
+     gesture in the app. Re-enabled per-element on reading copy only. */
+  -webkit-user-select: none;
+  user-select: none;
+  overscroll-behavior: none;
+}
+
+/* The guard on the one-weight rule, and it has to be a rule rather than a
+   convention. The browser sets font-weight:bold on headings, <strong>, <b> and
+   <th> by default. That cost nothing while only the Light was loaded — there
+   was no bold to resolve to and synthesis was off — but the moment a real 700
+   entered the app every essay title and every emphasised word silently became
+   bold. This puts them all back. .folder__name opts in explicitly, and it is
+   the only thing in the app that does. */
+h1, h2, h3, h4, h5, h6, b, strong, th { font-weight: var(--w); }
+
+img { display: block; max-width: 100%; border-style: none; }
+
+button, input, textarea, select {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  border-radius: var(--r-0);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+button { cursor: pointer; }
+
+a { color: inherit; text-decoration: none; }
+
+/* ── Type roles ─────────────────────────────────────────────────────────────
+   Everything in the app is one of these. They differ by SIZE and by how much
+   ink they're allowed — never by weight, because there is only one weight.
+
+   Note the pairing: as size goes up, tracking goes negative and colour goes to
+   full ink; as size goes down, tracking opens up and colour recedes. That
+   inverse relationship carries the hierarchy on its own. None of these roles
+   uses weight — that belongs to the tree alone. */
+
+.t-micro {
+  font-size: var(--t-micro);
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--ink-3);
+  line-height: var(--leading-tight);
+}
+
+.t-meta {
+  font-size: var(--t-meta);
+  color: var(--ink-2);
+  line-height: var(--leading-tight);
+}
+
+.t-body {
+  font-size: var(--t-body);
+  line-height: var(--leading);
+}
+
+.t-row {
+  font-size: var(--t-row);
+  line-height: var(--leading-tight);
+}
+
+.t-title {
+  font-size: var(--t-title);
+  letter-spacing: var(--track-tight);
+  line-height: var(--leading-tight);
+}
+
+.t-display {
+  font-size: var(--t-display);
+  letter-spacing: var(--track-tight);
+  line-height: var(--leading-tight);
+}
+
+/* ── Texture 1: grain ───────────────────────────────────────────────────────
+   One fixed element over the entire app, generated by feTurbulence in an
+   inline SVG data URI so it costs no request and no image file. It is the
+   topmost layer in the app and is never interactive.
+
+   Sized at 200px and tiled: a small tile keeps the SVG filter cheap to
+   rasterise, and at this opacity the repeat is invisible. */
+
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-grain);
+  pointer-events: none;
+  opacity: var(--grain);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  /* Additive on black so it lifts the void; subtractive on paper so it settles
+     into it. Same layer, opposite arithmetic — see tokens.css. */
+  mix-blend-mode: var(--grain-blend);
+  /* Promote to its own layer once, so scrolling underneath never repaints it. */
+  will-change: transform;
+}
+
+/* ── Texture 2: dot grid ────────────────────────────────────────────────────
+   A banding device, not a background. Applied to specific surfaces (now
+   reading, empty slots, section breaks) where the page needs to feel like
+   graph paper. Driven entirely by tokens so the density is tunable. */
+
+.dotgrid {
+  background-image: radial-gradient(var(--dot-ink) var(--dot-size), transparent var(--dot-size));
+  background-size: var(--dot-gap) var(--dot-gap);
+  background-position: center;
+}
+
+/* ── Hairlines ──────────────────────────────────────────────────────────────
+   A real 1px line on a 3x display, not a scaled-up 3px one. */
+
+.rule    { border-bottom: var(--hair) solid var(--rule); }
+.rule-top{ border-top:    var(--hair) solid var(--rule); }
+
+@media (min-resolution: 2dppx) {
+  .rule    { border-bottom-width: 0.5px; }
+  .rule-top{ border-top-width:    0.5px; }
+}
+
+/* ── Motion preference ────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Scrollers ──────────────────────────────────────────────────────────────
+   Momentum scrolling inside views, and no visible scrollbar — the app is a
+   surface, not a document. */
+
+.scroller {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+.scroller::-webkit-scrollbar { display: none; }

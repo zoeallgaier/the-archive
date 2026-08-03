@@ -1,0 +1,207 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE ARCHIVE — design system
+
+   This file is the entire visual language. Every other stylesheet reads from
+   it and declares no raw values of its own, so a redesign happens HERE and
+   nowhere else.
+
+   Three rules hold the whole thing up:
+
+     1. ONE WEIGHT, AND ONE EXCEPTION. Oxygen Light is the app. Hierarchy is
+        made by SIZE — and, second to that, by how much of the ink a thing is
+        allowed to use.
+
+        The exception is the home screen, and only the home screen. The five
+        words of the tree are the table of contents for the whole archive and
+        they are set in --w-bold. NOTHING ELSE IN THE APP MAY USE IT. Not
+        titles, not headings, not <strong> — emphasis in prose is still the
+        step up to full ink, because that is what makes the tree's weight mean
+        something when you see it.
+
+     2. Every spatial value is a multiple of --u. No magic numbers, no "just
+        3px more".
+
+     3. The type scale is geometric. Each step is roughly 1.3× the last, which
+        is what makes size legible AS hierarchy when weight isn't available to
+        help. Steps that are too close together just read as a mistake.
+
+   There are two palettes and they follow the phone. Everything below the
+   Surface block is shared — the light theme changes what the ink and the page
+   are made of, and nothing else. Nowhere in the app is a colour written down.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+
+  /* Tells the engine which way round we are, so the caret, the selection
+     highlight, and the software keyboard match the page instead of guessing. */
+  color-scheme: dark light;
+
+  /* ── Surface — dark, the default ──────────────────────────────────────────
+     True black, so OLED renders the page as switched-off pixels and the grain
+     sits on nothing. The off-white is cooled toward blue: paper under
+     fluorescent light, not warm cream.
+
+     The ink is kept as an unwrapped rgb triple so every step below it is one
+     colour at different strengths — swapping the theme is two lines, not
+     fifteen. */
+
+  --void:      #000000;
+  --ink-rgb:   239, 238, 233;
+
+  --ink:       rgb(var(--ink-rgb));
+  --ink-2:     rgba(var(--ink-rgb), 0.60);  /* secondary                 */
+  --ink-3:     rgba(var(--ink-rgb), 0.34);  /* labels, counts, dates     */
+  --ink-4:     rgba(var(--ink-rgb), 0.17);  /* placeholders, empty state */
+  --rule:      rgba(var(--ink-rgb), 0.13);  /* hairlines                 */
+  --rule-soft: rgba(var(--ink-rgb), 0.06);  /* indent guides             */
+  --wash:      rgba(var(--ink-rgb), 0.05);  /* pressed                   */
+
+  /* Reading copy sits just below full ink so <strong> has somewhere to go —
+     with one weight, emphasis is the step up to 100%. */
+  --ink-prose: rgba(var(--ink-rgb), 0.84);
+
+  /* The floating pills. Tinted toward the page they sit on, not toward the
+     ink, so the blur behind them reads as depth rather than as a panel. */
+  --pill:        rgba(0, 0, 0, 0.55);
+  --grain-blend: screen;   /* additive on black */
+
+  /* ── Grid ─────────────────────────────────────────────────────────────────
+     --u is the atom. Change it and the app rescales in proportion. */
+
+  --u:         4px;
+  --gutter:    calc(var(--u) * 4);    /* 16 — between grid items          */
+  --page-x:    calc(var(--u) * 6);    /* 24 — page side margin            */
+  --page-y:    calc(var(--u) * 7);    /* 28 — page top/bottom breathing   */
+  --row-h:     calc(var(--u) * 13);   /* 52 — one tree row                */
+  --indent:    calc(var(--u) * 5);    /* 20 — one tree depth step         */
+  --stack:     calc(var(--u) * 3);    /* 12 — between stacked text        */
+  --stack-lg:  calc(var(--u) * 9);    /* 36 — between sections            */
+  --nav-h:     calc(var(--u) * 17);   /* 68 — composer, above safe area    */
+  --tile-gap:  calc(var(--u) * 1.5);  /*  6 — moodboard, near-butted       */
+
+  /* The composer floats, so content scrolls UNDER it. Every scroller ends
+     with this much clearance or the last line sits behind the field. */
+  --float-clear: calc(var(--nav-h) + var(--gutter) + env(safe-area-inset-bottom, 0px));
+
+  /* The rhythm of the home screen. --tree-gap is the air on EACH side of a
+     divider, so the space between two branches is twice it and the hairline
+     lands dead centre of that space. Turn these up and the tree gets more
+     reverent, down and it gets denser. */
+
+  --tree-gap:  calc(var(--u) * 9);    /* 36 — half the space between branches */
+  --node-gap:  calc(var(--u) * 7);    /* 28 — leaf to leaf                    */
+  --tree-x:    calc(var(--u) * 8);    /* 32 — the tree sits in from the page
+                                             margin; it's the one screen with
+                                             nothing else on it */
+
+  /* ── Type ─────────────────────────────────────────────────────────────────
+     Oxygen, two weights. --w is the app. --w-bold has exactly one consumer,
+     .folder__name, and if you find it anywhere else that's a bug. The jump
+     from 300 to 700 is enormous on purpose — a 400 or a 500 would read as a
+     rendering accident next to the Light rather than as a decision. */
+
+  --font:   'Oxygen', -apple-system, system-ui, sans-serif;
+  --w:      300;
+  --w-bold: 700;
+
+  --t-micro:   11px;   /* caps labels, dates, authors      */
+  --t-meta:    13px;   /* captions, secondary              */
+  --t-row:     15px;   /* leaf rows in the tree            */
+  --t-body:    17px;   /* reading copy — essays live here  */
+  --t-folder:  20px;   /* folder rows — size IS the weight */
+  --t-title:   26px;   /* entry titles in a list           */
+  --t-display: 38px;   /* essay and work titles            */
+
+  /* The tree runs 20 / 15 / 11 — folder, leaf, and the line under a leaf.
+     Each step is ~1.35× the last, which is the smallest gap that still reads
+     as hierarchy rather than as an accident when every weight is the same. */
+
+  --track-caps:   0.16em;
+  --track-tight: -0.015em;   /* large sizes only — light type at 38px
+                                otherwise drifts apart */
+  --leading:       1.5;      /* body copy                */
+  --leading-tight: 1.12;     /* display                  */
+
+  /* ── Form ─────────────────────────────────────────────────────────────────
+     Mostly square. Where radius exists it's either hairline-soft or fully
+     round — the y2k move is the jump between those, not a middle ground. */
+
+  --r-0:    0;
+  --r-1:    2px;
+  --r-2:    10px;
+  --r-pill: 999px;
+  --hair:   1px;
+
+  /* ── Texture ──────────────────────────────────────────────────────────────
+     The rugged/human layer. Grain rides over everything; the dot grid bands
+     specific surfaces. Tuned to be felt, not seen — if you consciously notice
+     the grain, it's too high. */
+
+  --grain:    0.055;
+  --dot-ink:  rgba(239, 238, 233, 0.16);
+  --dot-size: 1px;
+  --dot-gap:  calc(var(--u) * 4);
+
+  /* ── Motion ───────────────────────────────────────────────────────────────
+     One curve for the whole app, so it has a single physical character. It
+     decelerates hard, which makes the tree feel like it settles rather than
+     stops. */
+
+  --ease:    cubic-bezier(0.2, 0.8, 0.2, 1);
+  --fast:    140ms;
+  --mid:     260ms;
+  --slow:    420ms;
+  --stagger: 22ms;
+
+  /* ── Depth ────────────────────────────────────────────────────────────────
+     No drop shadows anywhere. Layers separate by hairline and scrim. */
+
+  --scrim:      rgba(0, 0, 0, 0.72);
+  --z-nav:      100;
+  --z-sheet:    200;
+  --z-lightbox: 300;
+  --z-grain:    400;
+}
+
+/* ── Surface — light ────────────────────────────────────────────────────────
+   Follows the phone, no switch in the app: a private archive shouldn't have
+   opinions its owner's device doesn't already hold.
+
+   This is not an inversion. Black text on paper reads heavier at the same
+   opacity than white text on black does, so every step below full ink is set
+   a little stronger here — that's what keeps the hierarchy identical rather
+   than merely the ratios. The page is the same cool off-white the ink used to
+   be, so the two themes are made of the same two colours in either order. */
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --void:      #EFEEE9;
+    --ink-rgb:   17, 17, 15;
+
+    --ink-2:     rgba(var(--ink-rgb), 0.64);
+    --ink-3:     rgba(var(--ink-rgb), 0.40);
+    --ink-4:     rgba(var(--ink-rgb), 0.24);
+    --rule:      rgba(var(--ink-rgb), 0.16);
+    --rule-soft: rgba(var(--ink-rgb), 0.08);
+    --wash:      rgba(var(--ink-rgb), 0.05);
+    --ink-prose: rgba(var(--ink-rgb), 0.80);
+
+    /* Denser than the dark theme's pill. Black at 55% over a photo is already
+       most of the way to opaque; white at 55% over paper is barely there, and
+       a line of type scrolling under it stays legible right through. */
+    --pill:      rgba(255, 255, 255, 0.82);
+    /* Multiply, so the grain darkens paper instead of blowing it out. Lower,
+       because noise is far more visible on a light field than on black. */
+    --grain:       0.04;
+    --grain-blend: multiply;
+
+    --dot-ink:   rgba(var(--ink-rgb), 0.18);
+    --scrim:     rgba(17, 17, 15, 0.38);
+  }
+}
+
+/* Wider screens get more margin. Ratios are untouched — only the page margin
+   grows, so every proportion scales as one piece. */
+@media (min-width: 480px) {
+  :root { --page-x: calc(var(--u) * 9); }
+}

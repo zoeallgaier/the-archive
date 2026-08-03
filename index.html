@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<!-- Both themes are real, so the webview must not assume either one. -->
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#EFEEE9" media="(prefers-color-scheme: light)">
+<title>Archive</title>
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<!-- ═══ y2k icon set ═══════════════════════════════════════════════════════
+     One sprite, geometric, hairline stroke, no fills, no rounded joins. Small
+     on purpose: the tree stopped using icons, so what's left is only the
+     handful that stand in for a verb.
+     ══════════════════════════════════════════════════════════════════════ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+
+  <symbol id="ic-plus" viewBox="0 0 16 16">
+    <path d="M8 2.5v11M2.5 8h11" fill="none" stroke="currentColor"
+          stroke-width="1.25" stroke-linecap="square"/>
+  </symbol>
+
+  <symbol id="ic-close" viewBox="0 0 16 16">
+    <path d="M3.5 3.5l9 9M12.5 3.5l-9 9" fill="none" stroke="currentColor"
+          stroke-width="1.25" stroke-linecap="square"/>
+  </symbol>
+
+  <symbol id="ic-link" viewBox="0 0 16 16">
+    <path d="M6.5 3.5H13v6.5" fill="none" stroke="currentColor" stroke-width="1"/>
+    <path d="M13 3.5L6 10.5" fill="none" stroke="currentColor" stroke-width="1"/>
+    <path d="M11 13H3V5" fill="none" stroke="currentColor" stroke-width="1" opacity=".5"/>
+  </symbol>
+
+  <symbol id="ic-back" viewBox="0 0 16 16">
+    <path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor"
+          stroke-width="1.25" stroke-linecap="square"/>
+  </symbol>
+
+  <symbol id="ic-export" viewBox="0 0 16 16">
+    <path d="M8 10.5V2.5M5 5.5L8 2.5l3 3" fill="none" stroke="currentColor" stroke-width="1"/>
+    <path d="M2.5 9.5v4h11v-4" fill="none" stroke="currentColor" stroke-width="1"/>
+  </symbol>
+
+  <symbol id="ic-edit" viewBox="0 0 16 16">
+    <path d="M2.5 11.2L11 2.7l2.3 2.3-8.5 8.5H2.5z" fill="none" stroke="currentColor" stroke-width="1"/>
+    <path d="M9.4 4.3l2.3 2.3" fill="none" stroke="currentColor" stroke-width="1" opacity=".5"/>
+  </symbol>
+
+  <symbol id="ic-trash" viewBox="0 0 16 16">
+    <path d="M3.5 4.5h9M6 4.5V3h4v1.5M4.5 4.5l.7 9h5.6l.7-9"
+          fill="none" stroke="currentColor" stroke-width="1"/>
+    <path d="M6.8 7v4M9.2 7v4" fill="none" stroke="currentColor" stroke-width="1" opacity=".5"/>
+  </symbol>
+
+</svg>
+
+<!-- ═══ app ═══════════════════════════════════════════════════════════════ -->
+
+<div id="view" class="view" role="main"></div>
+
+<!-- The bottom bar is not navigation, and it is not five bars pretending to be
+     one. It's a single row that changes shape: no screen in the app has a
+     header, so back, edit and delete come down here and widen in from nothing
+     when the screen you're on has use for them. The wide pill in the middle is
+     always the main verb — Write on most screens, Publish in the editor.
+
+     Every button is in the DOM at all times. Collapsing to zero width is what
+     makes it a morph; rebuilding the row would make it a replacement. -->
+<div class="composer" id="composer">
+  <button class="composer__morph" id="composer-back" type="button" aria-label="Back">
+    <svg class="ic"><use href="#ic-back"></use></svg>
+  </button>
+  <button class="composer__morph" id="composer-edit" type="button" aria-label="Edit">
+    <svg class="ic"><use href="#ic-edit"></use></svg>
+  </button>
+  <button class="composer__morph" id="composer-trash" type="button" aria-label="Delete">
+    <svg class="ic"><use href="#ic-trash"></use></svg>
+  </button>
+  <button class="composer__main" id="composer-main" type="button">Write</button>
+  <button class="composer__morph composer__add" id="composer-add" type="button" aria-label="Add">
+    <svg class="ic"><use href="#ic-plus"></use></svg>
+  </button>
+</div>
+
+<!-- Above everything, always. -->
+<div class="grain" aria-hidden="true"></div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

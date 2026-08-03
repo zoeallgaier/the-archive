@@ -1,0 +1,9 @@
+{
+  "appId": "com.zoeallgaier.archive",
+  "appName": "Archive",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#000000"
+  }
+}

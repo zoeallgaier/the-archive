@@ -1,0 +1,27 @@
+node_modules/
+.DS_Store
+
+# Capacitor mirrors the web assets into www/ on every sync — generated, never edited.
+www/
+
+# Source material the migration reads FROM. The shipped copies live in seed/,
+# already resized, and those ARE committed — seed/ is what the app ships with.
+# These are the originals: 340MB of full-resolution art and camera JPEGs that
+# would be in every clone forever and are backed up outside this repo.
+#
+# Every one of these is anchored with a leading slash, and it matters. An
+# unanchored `moodboard/` matches at ANY depth, so it also swallowed
+# seed/media/moodboard/ — 145 images the app cannot run without, silently
+# absent from the repo. Same trap for marginalia/.
+/moodboard/
+/marginalia/
+/compositions/
+/design inspo for claude/
+/art/
+/_source-photos/
+
+# Xcode
+ios/App/Pods/
+ios/App/App/public/
+xcuserdata/
+*.xcuserstate

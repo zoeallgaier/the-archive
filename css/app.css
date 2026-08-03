@@ -93,13 +93,15 @@
    title over it — the app has one home screen and you are looking at it, so a
    wordmark could only tell you what you already know.
 
-     folder   20px BOLD, full ink    count  11px, 34% ink, hard right
-     leaf     15px light, 60% ink
-     sub      11px light, 24% ink, caps
+     folder   26px RIPOFF, full ink  count  11px, 34% ink, hard right
+     leaf     15px Oxygen, 60% ink
+     sub      11px Oxygen, 24% ink, caps
 
-   This is the only place in the app with a bold, and it is what makes the five
-   words read as the contents page rather than as the first five rows of a
-   list. See the doctrine at the top of tokens.css before using it elsewhere.
+   The folder row is the only place in the app that changes typeface, and it's
+   what makes the five words read as the contents page rather than as the first
+   five rows of a list. It buys that with a second face instead of a second
+   weight, so the one-weight rule survives intact. See the doctrine at the top
+   of tokens.css before using --font-display anywhere else.
 
    Indentation is gone. With only two levels there is nothing for an indent to
    disambiguate, and the shared left edge does more for the grid than a step
@@ -151,11 +153,16 @@
 .folder__name {
   flex: 1;
   min-width: 0;
-  font-size: var(--t-folder);
-  font-weight: var(--w-bold);
-  /* Bold at this size closes up on its own, so it gets less negative tracking
-     than the Light does — the display sizes elsewhere keep --track-tight. */
-  letter-spacing: -0.005em;
+  font-family: var(--font-display);
+  /* A step up from --t-folder. Ripoff is a hairline face with a small x-height
+     for its em, so at 20px it read as smaller and lighter than the Oxygen
+     leaves beneath it — the opposite of the job. 26 is where it out-weighs
+     them again on presence alone. */
+  font-size: var(--t-title);
+  /* Positive, against every other large size in the app. The face is squared
+     and narrow and its letters lock together at default tracking; opening it
+     up is what makes it read as a display line rather than a logo. */
+  letter-spacing: 0.04em;
   line-height: var(--leading-tight);
 }
 

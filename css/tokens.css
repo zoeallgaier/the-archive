@@ -7,16 +7,16 @@
 
    Three rules hold the whole thing up:
 
-     1. ONE WEIGHT, AND ONE EXCEPTION. Oxygen Light is the app. Hierarchy is
-        made by SIZE — and, second to that, by how much of the ink a thing is
-        allowed to use.
+     1. ONE WEIGHT. Oxygen Light, everywhere, no exceptions. There is no bold
+        in this app. Hierarchy is made by SIZE — and, second to that, by how
+        much of the ink a thing is allowed to use.
 
-        The exception is the home screen, and only the home screen. The five
-        words of the tree are the table of contents for the whole archive and
-        they are set in --w-bold. NOTHING ELSE IN THE APP MAY USE IT. Not
-        titles, not headings, not <strong> — emphasis in prose is still the
-        step up to full ink, because that is what makes the tree's weight mean
-        something when you see it.
+        There is a SECOND FACE, and it is not a second weight. RipoffSTYLE
+        Thin sets the five words of the tree on the home screen and nothing
+        else, anywhere, ever. It's a display face, not a text face — it exists
+        to make the contents page look like a different kind of object from
+        everything it leads to. The moment it appears on a title or a heading
+        it stops doing that. See --font-display.
 
      2. Every spatial value is a multiple of --u. No magic numbers, no "just
         3px more".
@@ -37,16 +37,16 @@
   color-scheme: dark light;
 
   /* ── Surface — dark, the default ──────────────────────────────────────────
-     True black, so OLED renders the page as switched-off pixels and the grain
-     sits on nothing. The off-white is cooled toward blue: paper under
-     fluorescent light, not warm cream.
+     True black and true white. Nothing warmed, nothing cooled, no off-white
+     standing in for paper — the archive is a screen and reads like one. On
+     OLED the page is switched-off pixels and the grain sits on nothing.
 
      The ink is kept as an unwrapped rgb triple so every step below it is one
      colour at different strengths — swapping the theme is two lines, not
      fifteen. */
 
   --void:      #000000;
-  --ink-rgb:   239, 238, 233;
+  --ink-rgb:   255, 255, 255;
 
   --ink:       rgb(var(--ink-rgb));
   --ink-2:     rgba(var(--ink-rgb), 0.60);  /* secondary                 */
@@ -95,14 +95,18 @@
                                              nothing else on it */
 
   /* ── Type ─────────────────────────────────────────────────────────────────
-     Oxygen, two weights. --w is the app. --w-bold has exactly one consumer,
-     .folder__name, and if you find it anywhere else that's a bug. The jump
-     from 300 to 700 is enormous on purpose — a 400 or a 500 would read as a
-     rendering accident next to the Light rather than as a decision. */
+     Oxygen Light and nothing else. --w exists as a single token precisely so
+     there is no second weight to reach for.
 
-  --font:   'Oxygen', -apple-system, system-ui, sans-serif;
-  --w:      300;
-  --w-bold: 700;
+     --font-display has exactly one consumer, .folder__name, and if you find it
+     anywhere else that's a bug. RipoffSTYLE Thin is a 2001 display face: wide,
+     hairline, squared — it does at 20px what a bold would have done, without
+     putting a second weight into an app whose whole argument is that it
+     doesn't need one. */
+
+  --font:         'Oxygen', -apple-system, system-ui, sans-serif;
+  --font-display: 'Ripoff', 'Oxygen', sans-serif;
+  --w:            300;
 
   --t-micro:   11px;   /* caps labels, dates, authors      */
   --t-meta:    13px;   /* captions, secondary              */
@@ -138,7 +142,7 @@
      the grain, it's too high. */
 
   --grain:    0.055;
-  --dot-ink:  rgba(239, 238, 233, 0.16);
+  --dot-ink:  rgba(var(--ink-rgb), 0.16);
   --dot-size: 1px;
   --dot-gap:  calc(var(--u) * 4);
 
@@ -167,16 +171,16 @@
    Follows the phone, no switch in the app: a private archive shouldn't have
    opinions its owner's device doesn't already hold.
 
-   This is not an inversion. Black text on paper reads heavier at the same
-   opacity than white text on black does, so every step below full ink is set
-   a little stronger here — that's what keeps the hierarchy identical rather
-   than merely the ratios. The page is the same cool off-white the ink used to
-   be, so the two themes are made of the same two colours in either order. */
+   The two themes are the same two colours in either order — #000 and #FFF,
+   swapped. But it is NOT a straight inversion. Black text on white reads
+   heavier at the same opacity than white text on black does, so every step
+   below full ink is set a little stronger here; that's what keeps the
+   hierarchy identical rather than merely the ratios. */
 
 @media (prefers-color-scheme: light) {
   :root {
-    --void:      #EFEEE9;
-    --ink-rgb:   17, 17, 15;
+    --void:      #FFFFFF;
+    --ink-rgb:   0, 0, 0;
 
     --ink-2:     rgba(var(--ink-rgb), 0.64);
     --ink-3:     rgba(var(--ink-rgb), 0.40);
@@ -187,16 +191,16 @@
     --ink-prose: rgba(var(--ink-rgb), 0.80);
 
     /* Denser than the dark theme's pill. Black at 55% over a photo is already
-       most of the way to opaque; white at 55% over paper is barely there, and
+       most of the way to opaque; white at 55% over white is barely there, and
        a line of type scrolling under it stays legible right through. */
     --pill:      rgba(255, 255, 255, 0.82);
-    /* Multiply, so the grain darkens paper instead of blowing it out. Lower,
-       because noise is far more visible on a light field than on black. */
+    /* Multiply, so the grain darkens the page instead of blowing it out.
+       Lower, because noise is far more visible on white than on black. */
     --grain:       0.04;
     --grain-blend: multiply;
 
     --dot-ink:   rgba(var(--ink-rgb), 0.18);
-    --scrim:     rgba(17, 17, 15, 0.38);
+    --scrim:     rgba(0, 0, 0, 0.38);
   }
 }
 

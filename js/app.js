@@ -18,6 +18,7 @@ import * as search from './search.js';
 import { paletteCard } from './palette.js';
 import { el } from './ui.js';
 import { selectionTick } from './platform.js';
+import { ensure as unlock } from './gate.js';
 
 const mount = document.getElementById('view');
 const composer = document.getElementById('composer');
@@ -375,7 +376,9 @@ document.addEventListener('touchcancel', () => endSwipe(false), { passive: true 
 
 window.addEventListener('hashchange', () => { moved = true; render(); });
 
-store.load()
+// Nothing below this line runs until the gate resolves — see js/gate.js.
+unlock()
+  .then(() => store.load())
   .then(render)
   .catch((err) => {
     console.error(err);

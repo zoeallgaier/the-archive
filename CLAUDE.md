@@ -148,6 +148,8 @@ css/tokens.css      the entire visual language — every value lives here
 css/base.css        reset, @font-face, the grain layer
 css/app.css         every component
 js/app.js           boot, hash routing, the composer, swipe-back
+js/gate.js          the password screen — a deterrent, not a lock; read
+                    its header before promising anyone it's more
 js/store.js         the node index, in memory, one JSON blob behind it
 js/platform.js      storage, camera roll, feedback — the ONLY file that
                     touches localStorage, IndexedDB or a file input

@@ -120,6 +120,26 @@ export function writePalette(pal) {
   }
 }
 
+/* ── The gate ────────────────────────────────────────────────────────────────
+   One flag, so a correct password is remembered rather than asked for on
+   every launch. See js/gate.js for what it is and isn't protecting. */
+
+const GATE_KEY = 'archive.gate';
+
+export function readGate() {
+  return localStorage.getItem(GATE_KEY) === '1';
+}
+
+export function writeGate() {
+  try {
+    localStorage.setItem(GATE_KEY, '1');
+  } catch (e) {
+    // Private browsing, most likely. The gate still works this launch; it
+    // just asks again next time, which is a worse annoyance than a throw.
+    console.error('could not remember the gate', e);
+  }
+}
+
 /* ── Binary media ───────────────────────────────────────────────────────────
    Photographs you add, as blobs in IndexedDB behind object URLs. Not
    localStorage: that is a string store, base64 costs a third again in size,

@@ -358,6 +358,7 @@
   --z-nav:      100;
   --z-lightbox: 200;
   --z-sheet:    300;
+  --z-gate:     350;   /* above every card the app can ask — see js/gate.js */
   --z-grain:    400;
 }
 

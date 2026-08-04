@@ -1106,6 +1106,37 @@
 }
 .card__go:active { opacity: 0.7; }
 
+/* ── Gate ───────────────────────────────────────────────────────────────────
+   The one screen that isn't part of the archive, and the one place a
+   card-shaped panel sits in the MIDDLE of the screen rather than off the
+   bottom edge — there's no composer underneath it to have grown out of;
+   app.js hasn't mounted one yet when this is up. Built from .card__panel,
+   .card__field and .card__go directly rather than new component CSS, so a
+   password prompt still reads as the same object as every other question the
+   app asks. See js/gate.js. */
+.gate {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-gate);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--page-x);
+  background: var(--void);
+}
+
+.gate__panel {
+  width: 100%;
+  max-width: calc(var(--u) * 90);
+}
+.gate__panel .card__field { text-align: center; }
+
+@keyframes gate-shake {
+  25% { transform: translateX(calc(var(--u) * -2)); }
+  75% { transform: translateX(calc(var(--u) * 2)); }
+}
+.gate__panel--wrong { animation: gate-shake var(--fast) var(--ease) 2; }
+
 /* ── States ─────────────────────────────────────────────────────────────── */
 
 .empty {

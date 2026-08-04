@@ -8,6 +8,33 @@ JSON index, served straight off disk. `index.html` is the whole entry point.
 
 ---
 
+## Who you're working with
+
+**Zoe is a designer.** She owns the visual and interaction decisions and is
+sharp about them — the doctrine in `tokens.css` is hers and it is coherent.
+
+She does not necessarily read the storage, routing, or build layers the way she
+reads the CSS, and should not have to. So:
+
+- **Lead with the consequence, not the mechanism.** Not "IndexedDB is
+  origin-scoped" — *"photos added in Chrome will not appear on your phone,
+  ever."* Not "the service worker is network-first" — *"a push reaches your
+  phone on the next launch."*
+- **Say what a technical choice costs her in the product.** Storage limits,
+  offline behaviour, what happens if a phone is lost, what breaks if she taps
+  the wrong thing. Those are design constraints; she'll weigh them well once
+  they're in those terms.
+- **Never let a backend decision quietly narrow the design.** If something
+  can't be built the way she drew it, say so plainly and say what *can* be —
+  don't silently ship the easier interaction.
+- **Don't ask her to arbitrate implementation detail.** Pick the sound option,
+  say which you picked in a sentence, move on. Ask when the answer is a
+  product or taste decision — that's hers.
+- Explaining the reasoning is welcome; assuming she already knows the jargon is
+  not. She's said as much directly.
+
+---
+
 ## The workflow
 
 **Claude builds. Zoe reviews the deployed site. Claude does not screenshot every
@@ -44,6 +71,61 @@ present so directories beginning with `_` are not swallowed.
 Then Run in Xcode. `www/` is generated on every sync and gitignored — **never
 edit anything in `www/`**, edit the source and re-run. `sw.js` is deliberately
 not mirrored: the native build already loads every asset off the device.
+
+---
+
+## Delivery target: homescreen shortcut vs native app
+
+**Current answer: the Safari homescreen shortcut is the primary target, and the
+native build stays as a secondary one. But browser storage is scratch until
+export/import exists.**
+
+The two builds are the same source and differ only in what is underneath
+`platform.js`. What that difference actually costs:
+
+| | Homescreen shortcut | Native (Capacitor) |
+|---|---|---|
+| Getting a change onto the phone | `git push`, next launch | Xcode, cable, re-sign |
+| Offline | yes, via `sw.js` | yes, assets are on disk |
+| Haptics | **none** | yes |
+| Where data lives | localStorage + IndexedDB | files in the app container |
+| In the iOS device backup | **no** | yes |
+| Can iOS delete it | **yes** | no |
+| Storage ceiling | a WebKit quota | free space |
+
+The top row is why the shortcut wins for how this app is actually worked on:
+design iteration is the main activity, and one of these has a thirty-second
+loop while the other has Xcode in it.
+
+The rows in bold are the price. Script-writable storage on iOS is *evictable* —
+WebKit ages it out and reclaims it under pressure. Installed homescreen web apps
+get more latitude than a plain Safari tab, but it is still storage the OS is
+allowed to reclaim, it is not something you can point at in a backup, and
+"Clear Website Data" reaches it. **This has not been tested on Zoe's device and
+is reasoning about documented WebKit behaviour, not a measurement.** Treat it as
+a risk to design around rather than a fact to quote at her.
+
+So the rule until export exists: **the homescreen shortcut is for reading the
+archive and reviewing design. Anything written into it should be assumed
+temporary.** The seeded 289 nodes are safe regardless — they ship in the repo
+and re-download.
+
+### The way out, and it closes two gaps at once
+
+Build **export/import**, and shape the export like `seed/`.
+
+Then a bundle exported from the phone is something Zoe drops into the repo and
+commits — and the repo becomes the backup *and* the sync path in one move:
+commit on the Mac, push, and the phone has it on next launch. It is the thing
+she already described wanting the GitHub site to be.
+
+That is the highest-value feature left in this app, and it is the precondition
+for the homescreen shortcut being a safe place to author. `platform.js` already
+has `writeDocument()` and `shareFile()` sitting unused for exactly this.
+
+Do not let the native build quietly become the "real" one. It has a signing
+treadmill on a free Apple account and it breaks the review loop that the whole
+workflow above is built on.
 
 ---
 
@@ -215,11 +297,11 @@ in localStorage to exercise reconciliation.
 
 Not bugs — things that genuinely do not exist yet.
 
+- **No export/import.** `platform.js` has `writeDocument()` and `shareFile()`
+  and nothing calls them. **This is the next thing to build** — see *Delivery
+  target* above for why it is load-bearing rather than nice to have.
 - **No sync.** Content added on the phone is not on the Mac and vice versa. See
   below.
-- **No export/import.** `platform.js` has `writeDocument()` and `shareFile()`
-  and nothing calls them. This is the obvious next feature and the thing that
-  would make user data survive a lost phone.
 - **No way to reorder or retitle images**, or to move one between folders.
 - **Search is text only.** Images carry no words and are not indexed; the wall
   is how you find one. This is deliberate.

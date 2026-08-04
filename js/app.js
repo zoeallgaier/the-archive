@@ -15,6 +15,7 @@ import * as gallery from './gallery.js';
 import * as editor from './editor.js';
 import * as create from './create.js';
 import * as search from './search.js';
+import { paletteCard } from './palette.js';
 import { el } from './ui.js';
 import { selectionTick } from './platform.js';
 
@@ -22,6 +23,7 @@ const mount = document.getElementById('view');
 const composer = document.getElementById('composer');
 
 const pill = {
+  palette: document.getElementById('composer-palette'),
   back:   document.getElementById('composer-back'),
   trash:  document.getElementById('composer-trash'),
   add:    document.getElementById('composer-add'),
@@ -92,6 +94,7 @@ async function render() {
    one lives in the bottom row instead. A view says what it needs by hanging a
    __chrome object off itself:
 
+     palette true to show the palette pill. The home screen only — see below
      back    show the back pill — true to pop history, or a function to run
              instead, for something that isn't a route to leave
      trash   a function — show the delete pill and call it. One caller: the
@@ -128,9 +131,22 @@ async function render() {
    The two screens with neither corner tenant are both doing one thing: the
    editor, where the slot is Publish and offering to start a second piece
    mid-sentence is the same mistake as a Write button on a page you're reading,
-   and the lightbox, which borrows the row for back and delete only. */
+   and the lightbox, which borrows the row for back and delete only.
 
-const HOME_CHROME = { search: true, add: true };
+   THE LEFT EDGE HAS A SECOND TENANT, ON ONE SCREEN. Left is leaving, and the
+   home screen is the one place in the app with nothing to leave — so the slot
+   back would occupy is empty there, permanently, and the palette takes it.
+   That isn't a compromise with the rule; it is the one screen the rule has
+   nothing to say about. Everywhere else the palette pill is collapsed to zero
+   and back is exactly where it has always been, so the two never share the row
+   and the right corner never moves.
+
+   It is a pill and not a row in the ＋ card because the palette is the one
+   control in the app whose effect you judge by looking at the screen behind
+   it. A menu two taps deep is where you put something you use once; this is
+   something you sit and turn until the archive looks right. */
+
+const HOME_CHROME = { search: true, add: true, palette: true };
 
 let actions = {};
 
@@ -138,7 +154,7 @@ function dressComposer(chrome) {
   const c = chrome || HOME_CHROME;
   actions = c;
 
-  for (const key of ['back', 'trash', 'add', 'more']) {
+  for (const key of ['palette', 'back', 'trash', 'add', 'more']) {
     pill[key].toggleAttribute('data-on', !!c[key]);
   }
 
@@ -219,6 +235,11 @@ pill.back.addEventListener('click', () => {
   else goBack();
 });
 pill.trash.addEventListener('click', () => { actions.trash?.(); });
+
+/* The palette. It takes no argument and belongs to no view — it changes the
+   two colours the whole archive is made of, so the card is opened straight
+   from here rather than handed down through a screen's chrome. */
+pill.palette.addEventListener('click', () => { selectionTick(); paletteCard(); });
 pill.main.addEventListener('click', () => { selectionTick(); actions.main?.onclick?.(); });
 
 /* The ＋ is one button with two meanings, and the screen picks which. Off the

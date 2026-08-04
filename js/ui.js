@@ -152,6 +152,17 @@ export function card(title, onClose) {
       return api;
     },
 
+    /** A row the caller built itself. The escape hatch for the one card whose
+        rows carry something other than a label and a number — the palette puts
+        a swatch where the count goes, and marks the live one. It is deliberately
+        the row and not the contents: whatever goes in still has to be a
+        .card__row, so it presses, spaces and scrolls like every other choice in
+        the app. See paletteCard in palette.js. */
+    rowNode(node) {
+      list.append(node);
+      return api;
+    },
+
     /** A line of text to fill in, set in the same type as the row above it. */
     field(placeholder, attrs) {
       const input = el('input.card__field', {

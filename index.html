@@ -44,6 +44,46 @@
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/app.css">
+
+<!-- ═══ the surface, before the first paint ═════════════════════════════════
+     Which of the two surfaces is showing is one attribute on <html>, and this
+     is what sets it. See the Surface blocks in tokens.css for why it is an
+     attribute and not a media query — in short, a custom palette can put dark
+     ink on a light ground the phone knows nothing about, so the question is
+     "is the page the lighter of the two colours", which only the app can
+     answer.
+
+     IT RUNS HERE, BLOCKING, AND THAT IS THE POINT. The whole app is one solid
+     colour edge to edge. A frame of black before a cream palette arrives isn't
+     a flicker, it's the screen changing colour in your hand — so this cannot
+     wait for the module graph, and it is the one place outside platform.js
+     that touches localStorage. It gets away with it by doing no thinking: the
+     stored palette carries a finished style string FOR EACH MODE, both written
+     by js/palette.js, which recomputes and rewrites them on every boot. All
+     that happens here is picking one of the two. There is no second copy of
+     the derivation to drift out of step with the first — there is no
+     derivation here at all.
+
+     The two theme-color metas are scoped by colour-scheme and are what tints
+     the browser UI around a tab. Under a palette neither scope is right, so
+     both are unscoped and set to that mode's page colour; whichever the engine
+     picks then gives the same answer.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  var root = document.documentElement, p = null;
+  var mode = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  root.setAttribute('data-page', mode);
+  try { p = JSON.parse(localStorage.getItem('archive.palette') || 'null'); } catch (e) {}
+  if (!p || !p.css || !p.css[mode]) return;
+  root.style.cssText = p.css[mode];
+  var metas = document.querySelectorAll('meta[name="theme-color"]');
+  for (var i = 0; i < metas.length; i++) {
+    metas[i].removeAttribute('media');
+    metas[i].setAttribute('content', p[mode]);
+  }
+})();
+</script>
 </head>
 <body>
 
@@ -110,6 +150,21 @@
   <symbol id="ic-more" viewBox="0 0 16 16">
     <path d="M3.5 8h.01M8 8h.01M12.5 8h.01" fill="none" stroke="currentColor"
           stroke-width="1.5" stroke-linecap="round"/>
+  </symbol>
+
+  <!-- THE ONLY FILL IN THE SPRITE, and it is the exception that states the
+       rule. Every other drawing here is a hairline outline because it stands
+       for a verb, and a verb has a shape rather than a colour. This one stands
+       for the two colours themselves — so a hollow drawing of it would be a
+       picture of a palette with the palette left out.
+
+       It draws itself in whatever palette is live: the filled half is
+       currentColor, the empty half is the pill it sits in, which is the page.
+       So the button in the corner of the home screen is always a sample of the
+       archive you are looking at, and it changes when you change it. -->
+  <symbol id="ic-palette" viewBox="0 0 16 16">
+    <circle cx="8" cy="8" r="5.5" fill="none" stroke="currentColor" stroke-width="1"/>
+    <path d="M8 2.5a5.5 5.5 0 0 0 0 11z" fill="currentColor"/>
   </symbol>
 
   <!-- ── The marks ─────────────────────────────────────────────────────────
@@ -198,8 +253,25 @@
        everywhere and is already where you go to look for something.
 
        THE MAIN ACTION, on the screens that have one — Publish in the editor.
-       That screen is doing one thing and search isn't it. -->
+       That screen is doing one thing and search isn't it.
+
+     THE LEFT EDGE HAS A SECOND TENANT NOW, and only on one screen. Left is
+     leaving, and the home screen is the one place in the app there is nothing
+     to leave — so the slot back would occupy is empty there, permanently, and
+     the palette takes it. It is not a compromise with the rule; it is the one
+     screen the rule has nothing to say about. On every other screen the
+     palette button is collapsed to zero and back is where it has always been,
+     so the two never share the row and the corner never moves.
+
+     Why there and not in the ＋ card: the palette is the one control in the
+     app whose effect you judge by looking at the screen behind it. A row in a
+     menu two taps deep is where you put something you use once; this is
+     something you sit and turn until the archive looks right. -->
 <div class="composer" id="composer">
+  <button class="composer__morph" id="composer-palette" type="button"
+          aria-label="Palette" aria-haspopup="true">
+    <svg class="ic"><use href="#ic-palette"></use></svg>
+  </button>
   <button class="composer__morph" id="composer-back" type="button" aria-label="Back">
     <svg class="ic"><use href="#ic-back"></use></svg>
   </button>

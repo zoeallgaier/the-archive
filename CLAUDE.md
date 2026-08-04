@@ -138,6 +138,7 @@ js/store.js         the node index, in memory, one JSON blob behind it
 js/platform.js      storage, camera roll, feedback — the ONLY file that
                     touches localStorage, IndexedDB or a file input
 js/media.js         image paths → renderable URLs; camera-roll import
+js/palette.js       the six palettes, and the two colours the app is made of
 js/ui.js            el(), card(), toast(), confirm(), the shared vocabulary
 js/tree.js          home screen
 js/entries.js       the reader
@@ -198,12 +199,34 @@ seed. This is tested — see *Testing*.
 `css/tokens.css` is the design system and the argument for it. Read its header
 before changing anything visual. In short:
 
-- **Two colours.** Pure black and pure white, swapped by `prefers-color-scheme`.
-  No accent, ever. "This one" is said by **inverting** — ink ground,
-  page-coloured mark — which is what the lit formatting mark, the ticked
-  checkbox and the card's affirmative all do.
-- **One face.** Oxygen Light. Oxygen Bold exists for exactly one selector,
-  `.prose strong`. Hierarchy everywhere else is **size and ink**.
+- **Two colours, and you pick which two.** The archive is one ink and one page
+  and the distance between them — never three. No accent, ever. "This one" is
+  said by **inverting** — ink ground, page-coloured mark — which is what the lit
+  formatting mark, the ticked checkbox and the card's affirmative all do.
+
+  A palette is a **pair** — one dark colour, one light — and **the two swap with
+  `prefers-color-scheme`**, so every palette follows the phone the way pure black
+  and white always did. Six of them live in `js/palette.js`; the ⌗ pill at the
+  bottom-left of the home screen opens the card. **Auto is pure black and white
+  and is stored as nothing at all**, so "no palette" and "the black-and-white
+  palette" are the same state and cannot come apart.
+
+  Everything else — the four steps of ink, the outlines, the wash, the grain,
+  the scrim — is those two colours through the step table in `tokens.css`. That
+  is why recolouring the app cannot change its grammar. **Do not add a colour
+  anywhere else.**
+- **Two faces, and the line between them is a name against a sentence.**
+  *Oxygen* for everything you read and everything you press — Light 300 for copy,
+  Bold 700 for the caps labels and `.prose strong`. *RipoffSTYLE* for **every
+  title and nothing else**, in two weights: Normal for the home screen's five
+  words, Thin for a page's own title and the headings inside it. So the archive
+  gets quieter the further in you go.
+- **The type scale is deliberately broken.** 11 / 13 / 15 / 17 for everything
+  functional and for the reading copy, then a canyon, then 30 / 56 / 60 for the
+  three sizes of title. Nothing in the twenties, on purpose. A page's title is
+  justified to both edges with `text-align-last` and set on `--leading-block`
+  (0.80), which is a floor Ripoff can hit only because it has no descender —
+  see the note in `tokens.css` before lowering it.
 - **Every spatial value is a multiple of `--u` (4px).** No magic numbers, and no
   raw values outside `tokens.css`.
 - **Two shapes:** a rounded pill with a sharp 1px outline filled with the page,
@@ -259,6 +282,16 @@ without, silently missing from the repo.
 
 **A card and the lightbox both close on `popstate`.** Swipe-back is disabled
 while either is up (`overlayUp()` in `app.js`).
+
+**Which surface is showing is an attribute, not a media query.** `data-page` on
+`<html>` is `dark` or `light`, and the blocking script in `index.html` sets it
+**before the first paint** along with any stored palette. There is no
+`prefers-color-scheme` rule for the surface any more — a palette can put dark ink
+on a light ground the phone knows nothing about, so the question is "is the page
+the lighter of the two colours", which only the app can answer. That script is
+the one place outside `platform.js` allowed to touch localStorage, and it does no
+arithmetic: `palette.js` stores a finished style string per mode and the script
+picks one. **If you change the derivation, do not copy it into that script.**
 
 ---
 

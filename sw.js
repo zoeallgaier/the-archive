@@ -44,7 +44,7 @@
    without a dance. Bump VERSION to drop every cached byte and start again.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE = `archive-${VERSION}`;
 
 /* The app, and the one file it cannot start without. Small enough to fetch in
@@ -67,11 +67,14 @@ const SHELL = [
   'js/search.js',
   'js/media.js',
   'js/platform.js',
+  'js/palette.js',
   'js/ui.js',
   'fonts/oxygen-300.woff2',
   'fonts/oxygen-300-ext.woff2',
   'fonts/oxygen-700.woff2',
   'fonts/oxygen-700-ext.woff2',
+  'fonts/ripoff-thin.woff2',
+  'fonts/ripoff-normal.woff2',
   'seed/index.json',
 ];
 

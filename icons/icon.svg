@@ -1,0 +1,29 @@
+<!-- THE APP ICON, AT SOURCE. A black lowercase "a" in RipoffSTYLE Normal on
+     pure white — the same face the home screen's five words are set in, so the
+     thing on the springboard is a letter out of the archive rather than a logo
+     drawn for it. It was a lime "a" on light grey; the palette is #000 and
+     #FFF and nothing else, and the icon had no business being the one place a
+     third colour survived.
+
+     THE OUTLINE IS BAKED IN, NOT SET AS TEXT. Ripoff is not installed on
+     whatever renders this, and an icon that depends on a font is an icon that
+     silently becomes Helvetica. The path below is the glyph, pulled out of
+     RIPOSNORMAL.TTF once; the transform flips the font's y-up coordinates and
+     scales the 470-unit glyph to 624px on a 1024 canvas — about 61%, which
+     keeps it inside the squircle iOS masks it with.
+
+     Regenerate the PNGs from this file, at each size rather than by
+     downsampling one — the shape is all hard diagonals and they stay crisp
+     only if they are rasterised at the size they are drawn at:
+
+       for S in 180 192 512 1024; do
+         "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+           --headless=new --disable-gpu --screenshot=icons/icon-$S.png \
+           --window-size=$S,$S file://$PWD/icons/icon.svg
+       done -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+<rect width="1024" height="1024" fill="#FFFFFF"/>
+<g transform="translate(196.017 800.766) scale(1.327660 -1.327660)">
+<path d="M364 109V316L156 109ZM473 436V-1H3V110L219 326H3V435Z" fill="#000000" fill-rule="nonzero"/>
+</g>
+</svg>

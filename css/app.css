@@ -46,15 +46,16 @@
    the app has one home screen and you are looking at it, so a wordmark could
    only tell you what you already know.
 
-     folder   30px Oxygen, full ink
-     count    11px, 38% ink, hard right
-     leaf     15px Oxygen, 62% ink
-     sub      11px Oxygen caps, 20% ink
+     folder   60px Ripoff Normal, full ink
+     count    11px Oxygen Bold caps, 38% ink, hard right
+     leaf     15px Oxygen Light, 62% ink
+     sub      11px Oxygen Bold caps, 20% ink
 
-   The folder row is twice the size of the leaves under it and the only full
-   ink on the screen, and that is what makes the five words read as a contents
-   page rather than as the first five rows of a list. The distance is all in
-   size and ink — see the doctrine at the top of tokens.css.
+   The folder row is FOUR TIMES the size of the leaves under it, and it is the
+   only thing on the screen set in the display face. It was twice the size, in
+   the body face, which made the home screen a list with big headings; at this
+   distance and in Ripoff the five words ARE the screen and everything else on
+   it is annotation. See the doctrine at the top of tokens.css.
 
    NOTHING BUT WORDS. Each row used to carry its folder's mark in a gutter to
    the left — the same drawing the ＋ spends for that folder — and the drawings
@@ -103,14 +104,21 @@
   flex: 1;
   min-width: 0;
   font-size: var(--t-folder);
-  /* Light type this large drifts apart on its own. */
+  /* THE ONE PLACE THE ARCHIVE SHOUTS. Ripoff Normal, the heavy weight of the
+     display face, against Ripoff Thin at 72 on the page it opens and Oxygen
+     everywhere you read. The contents page is the only screen in the app that
+     is nothing but names, so it is the only one that can afford to be made
+     entirely of one. See the weight doctrine in tokens.css. */
+  font-family: var(--font-title);
+  font-weight: var(--w-title-bold);
   letter-spacing: var(--track-tight);
-  line-height: var(--leading-tight);
+  line-height: var(--leading-display);
 }
 
 .folder__count {
   flex: none;
   font-size: var(--t-micro);
+  font-weight: var(--w-bold);
   letter-spacing: var(--track-caps);
   color: var(--ink-3);
   font-variant-numeric: tabular-nums;
@@ -164,6 +172,7 @@
   display: block;
   margin-top: calc(var(--u) * 1.5);
   font-size: var(--t-micro);
+  font-weight: var(--w-bold);
   letter-spacing: var(--track-caps);
   text-transform: uppercase;
   color: var(--ink-4);
@@ -204,33 +213,74 @@
 
 /* ── Page head ──────────────────────────────────────────────────────────────
    One head for every screen that has a title: an essay, a gallery, and the
-   editor that writes the essay. Centred — a title standing over a whole page
-   isn't an item in a column you scan, it's a plate caption. Which is the only
-   way the editor can promise that what you write is what you'll read: it isn't
-   a lookalike of the reader's head, it is the same rules. */
+   editor that writes the essay. Which is the only way the editor can promise
+   that what you write is what you'll read: it isn't a lookalike of the
+   reader's head, it is the same rules.
+
+   FLUSH LEFT, RAGGED RIGHT. It was centred, on the argument that a title
+   standing over a whole page is a plate caption rather than an item in a
+   column you scan — which was true of a 38px title. At 72 it isn't: a centred
+   title that wraps to three lines makes three different left edges on a page
+   whose copy, whose images and whose every other screen all start at --page-x,
+   and the eye has to find the start of each line before it can read it. Flush
+   left, the title starts where the essay under it starts, the rag on the right
+   is the shape, and the size does the announcing on its own. */
 
 .head {
   max-width: calc(var(--u) * 168);
   margin: 0 auto;
-  padding: var(--stack-lg) var(--page-x);
-  text-align: center;
+  /* Deeper above than below: the title needs a field to stand in, and what
+     comes after it is its own meta line, close under. */
+  padding: calc(var(--stack-lg) * 1.6) var(--page-x) var(--stack-lg);
 }
 
-/* The same word as on the home screen that opened it, eight points larger.
-   That is the whole relationship between the contents page and a page: one is
-   the other's title. */
+/* The same word as on the home screen that opened it, twelve points larger and
+   three hundred units lighter — the same face, its other weight. That is the
+   whole relationship between the contents page and a page: one is the other's
+   title, and it arrives quieter than the word you tapped, because you are
+   about to read underneath it rather than choose from it. */
+/* JUSTIFIED TO BOTH EDGES, LAST LINE INCLUDED, ON THE TIGHTEST LEADING THE
+   face will take. This is the one thing in the archive that is set as a BLOCK
+   rather than as lines of type: every line runs margin to margin, they sit
+   0.04em clear of each other, and a three-word essay title arrives as a solid
+   rectangle with the words holding its corners apart.
+
+   `text-align-last` is the whole trick and it is why plain `justify` was not
+   enough — the last line of a justified paragraph is normally left alone, and
+   a title is USUALLY ONLY ITS LAST LINE. Without it, justify does nothing to
+   ninety per cent of the titles in this archive.
+
+   WHAT IT CANNOT DO: stretch a title that is one word. There are no spaces in
+   "Apathy" for the engine to open up, and CSS has no reliable way to justify
+   between letters instead — `text-justify: inter-character` is not implemented
+   in WebKit. A one-word title sets flush left at its natural width, and that
+   is the honest failure: it looks like a title rather than like a bug. */
 .head__title {
+  font-family: var(--font-title);
   font-size: var(--t-display);
+  font-weight: var(--w-title);
   letter-spacing: var(--track-tight);
-  line-height: var(--leading-tight);
+  line-height: var(--leading-block);
+  text-align: justify;
+  text-align-last: justify;
 }
+
+/* The editor's title placeholder. It hangs off .is-empty, which stretches edge
+   to edge to inherit its host's alignment — and inheriting THIS one would
+   spread the word "Title" across the whole phone with the caret parked at the
+   far left of it. A placeholder is not a title; it goes back to flush left and
+   the block starts the moment there is something to set. */
+.editor__title.is-empty::before { text-align-last: left; }
 
 /* One line under the title, and every screen puts something different in it: a
-   date, or a count of pieces. The editor puts the marks in the same slot but
-   not in this style — see .marks, which is its own row. */
+   date, or a count of pieces. Oxygen Bold caps at 11px hard under 72px of the
+   display face — the two faces, one over the other, which is the same pairing
+   the tree makes with a folder word and its count. The editor puts the marks
+   in the same slot but not in this style — see .marks, which is its own row. */
 .head__meta {
-  margin-top: var(--stack);
+  margin-top: var(--gutter);
   font-size: var(--t-micro);
+  font-weight: var(--w-bold);
   letter-spacing: var(--track-caps);
   text-transform: uppercase;
   color: var(--ink-3);
@@ -252,7 +302,23 @@
 }
 .page > * + * { margin-top: var(--stack-lg); }
 
-.page__lead { width: 100%; border-radius: var(--r-1); }
+/* THE LEAD IMAGE BREAKS THE MARGIN. Everything else on a page hangs off
+   --page-x; this one thing runs past it to the edges of the column, which on a
+   phone is the edges of the screen. An essay that opens with a photograph
+   should open with the photograph, not with a photograph inset inside the
+   measure of the words underneath it — the picture is the first thing, and the
+   margin is where the reading starts. Same move the moodboard makes by
+   ignoring --page-x entirely.
+
+   Written as a negative margin plus the width back, rather than 100vw, so it
+   bleeds to the COLUMN on a wide screen instead of escaping it. And it gives
+   up --r-1: two rounded corners resting on the bezel are the app rounding the
+   screen, not rounding a picture. */
+.page__lead {
+  width: calc(100% + var(--page-x) * 2);
+  margin-left: calc(var(--page-x) * -1);
+  border-radius: var(--r-0);
+}
 
 .prose {
   font-size: var(--t-body);
@@ -265,9 +331,20 @@
    size a step down — the third and last of them. It sits at full ink against
    the --ink-prose of the copy, which is what separates it without reaching for
    a face or a weight the chrome doesn't own. */
+/* The third and smallest of the title sizes, and it is the same face and the
+   same weight as the head above it — a heading inside an essay is the head of
+   a smaller thing, so it is the same voice a size down. It is also the one
+   place the display face lands in the middle of running Oxygen, which is what
+   makes a section break visible without a rule across the page.
+
+   --leading-tight, not --leading-display: the display leading is under 1 and
+   is drawn for a title of three or four words meant to read as one block. A
+   heading inside an essay is a sentence and it wraps like one. */
 .prose h2 {
   margin-top: calc(var(--stack-lg) * 1.6);
+  font-family: var(--font-title);
   font-size: var(--t-title);
+  font-weight: var(--w-title);
   letter-spacing: var(--track-tight);
   line-height: var(--leading-tight);
   color: var(--ink);
@@ -373,6 +450,7 @@
 .prose figcaption {
   margin-top: var(--stack);
   font-size: var(--t-micro);
+  font-weight: var(--w-bold);
   letter-spacing: var(--track-caps);
   text-transform: uppercase;
   color: var(--ink-3);
@@ -533,9 +611,14 @@
 .marks__glyph--bold   { font-weight: var(--w-bold); }
 .marks__glyph--italic { font-style: italic; }
 
-/* A heading is a step up in size and nothing else, so the button says it the
-   only way it can: an H bigger than the letters beside it. */
+/* EVERY MARK IS AN EXAMPLE OF ITSELF, and this one finally can be. A heading
+   in this app is a step up in size AND a change of face — .prose h2 is Ripoff
+   — so the H is set in Ripoff at the size the row can hold. It used to be an
+   Oxygen H made larger, which was an example of the old rule and stopped being
+   true the moment the titles changed face. */
 .marks__glyph--heading {
+  font-family: var(--font-title);
+  font-weight: var(--w-title);
   font-size: calc(var(--u) * 5.5);
 }
 
@@ -656,6 +739,7 @@
   display: block;
   margin-top: calc(var(--u) * 1.5);
   font-size: var(--t-micro);
+  font-weight: var(--w-bold);
   letter-spacing: var(--track-caps);
   text-transform: uppercase;
   color: var(--ink-4);
@@ -884,6 +968,7 @@
 .card__meta {
   flex: none;
   font-size: var(--t-micro);
+  font-weight: var(--w-bold);
   letter-spacing: var(--track-caps);
   color: var(--ink-3);
   font-variant-numeric: tabular-nums;
@@ -895,6 +980,43 @@
   line-height: var(--leading);
   color: var(--ink-2);
 }
+
+/* THE LIVE ROW, in the one card that has one. Every other card in the app asks
+   about something that hasn't happened yet — which folder, delete or not — so
+   no row in one is ever already the answer. The palette is a setting, so one
+   of its rows is always true, and it says so by INVERTING: ink ground,
+   page-coloured word. Same gesture as the lit formatting mark, the ticked
+   checkbox and .card__go below. Nothing new was invented for this. */
+.card__row--live {
+  background: var(--ink);
+  color: var(--void);
+}
+.card__row--live .card__meta { color: var(--void); }
+/* :active on an already-inverted row has no darker to go, so it dims. */
+.card__row--live:active { background: var(--ink); opacity: 0.7; }
+
+/* ── Swatch ─────────────────────────────────────────────────────────────────
+   A palette, drawn as the two colours it actually is and nothing else: one
+   pill, split down the middle, ink on the left and page on the right. The
+   app's own shape holding the app's own two-colour argument, at the size of
+   the count it stands where.
+
+   The two halves carry raw hex, which is the one thing in this stylesheet
+   allowed to and the reason is that they are not design values — they are the
+   data the row is about. A swatch reading from tokens could only ever draw the
+   palette you are already looking at. */
+.swatch {
+  flex: none;
+  align-self: center;
+  display: flex;
+  overflow: hidden;
+  width: calc(var(--u) * 10);
+  height: calc(var(--u) * 4);
+  border: var(--hair) solid var(--rule);
+  border-radius: var(--r-pill);
+}
+.swatch > i { flex: 1; }
+.card__row--live .swatch { border-color: var(--void); }
 
 .card__field {
   display: block;
@@ -920,6 +1042,7 @@
   background: var(--ink);
   color: var(--void);
   font-size: var(--t-micro);
+  font-weight: var(--w-bold);
   letter-spacing: var(--track-caps);
   text-transform: uppercase;
   transition: opacity var(--fast) var(--ease);
@@ -947,6 +1070,7 @@
   color: var(--void);
   border-radius: var(--r-pill);
   font-size: var(--t-micro);
+  font-weight: var(--w-bold);
   letter-spacing: var(--track-caps);
   text-transform: uppercase;
   opacity: 0;

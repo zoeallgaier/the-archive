@@ -7,24 +7,39 @@
 
    Four rules hold the whole thing up:
 
-     1. TWO WEIGHTS, AND THE SECOND ONE IS BOLD. Oxygen Light carries the app;
-        Oxygen Bold exists for exactly one job, which is <strong> inside
-        writing. The archive used to run on one weight and express emphasis as
-        a step up in ink, and in a notes app that reads as a rendering bug —
-        you press Bold and nothing appears to happen. Emphasis is now mass.
-        Everywhere OUTSIDE prose, hierarchy is still size and ink; nothing in
-        the chrome is allowed to reach for --w-bold.
+     1. TWO FACES, AND THE LINE BETWEEN THEM IS THE LINE BETWEEN A NAME AND A
+        SENTENCE. Oxygen carries everything you read and everything you press.
+        RipoffSTYLE — a display face from 2001 — sets every title in the
+        archive and nothing else.
 
-        ONE FACE. There is no second one. Titles — the five words of the tree,
-        the head of an essay or a work, and the headings inside one — are
-        Oxygen like everything else, and what marks them as titles is the same
-        thing that marks everything else in the chrome: SIZE and INK. A display
-        face was tried here and it made every title an announcement in a
-        different voice from the app it belonged to.
+        It is not decoration and it is not a second voice for its own sake. A
+        title is not a bigger version of the words underneath it, and at the
+        sizes below, setting one in the body face just makes the body face very
+        big. Ripoff is what stops the contents page from reading as a list with
+        large rows. It was here before for the tree alone; the argument only
+        got stronger as the titles got larger.
+
+        Each face is set in two weights, and both pairs mean the same thing.
+        Oxygen: Light 300 for copy, Bold 700 for the caps labels and for
+        `<strong>` — a label is a stamp and emphasis is mass. Ripoff: Normal
+        for the five words of the home screen, Thin for the head of a page and
+        the headings inside one, so the archive gets QUIETER the further in you
+        go. Which is the right way round for something built to read in.
 
      2. Every spatial value is a multiple of --u. No magic numbers.
 
-     3. The type scale is geometric — each step roughly 1.3× the last.
+     3. THE TYPE SCALE IS DELIBERATELY BROKEN. It used to be geometric, each
+        step about 1.3× the last, which is what you build when every size has
+        to be able to sit next to every other one. This one is two clusters
+        with a canyon between them: 11 / 13 / 15 / 17 for everything
+        functional and for the reading copy, then 30 / 56 / 60 for the three
+        sizes of title. There is nothing in the twenties on purpose. A folder
+        word is nearly four times the row beneath it, not one comfortable step
+        above it, and the space that opens up between them is the layout.
+
+        The home screen's 60 is the largest size in the app, and it is larger
+        than the 56 a page's own title gets. That is the right way round: the
+        contents page is a poster and a page is something you read.
 
      4. FORM IS TWO SHAPES: a rounded pill, or nothing. Anything that houses
         content is a pill with a sharp 1px outline, filled with the page. No
@@ -35,15 +50,18 @@
         base.css is the one blend mode in the app, and it's over everything
         equally, which is the opposite case.)
 
-   There are two palettes and they follow the phone. Everything below the
-   Surface block is shared: the light theme swaps what the ink and the page are
-   made of and changes nothing else.
+   There are two surfaces, dark and light, and which one is showing is decided
+   by ONE ATTRIBUTE on <html>: data-page. See the Surface blocks below.
+   Everything under them is shared — a surface swaps what the ink and the page
+   are made of and changes nothing else.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :root {
 
   /* Tells the engine which way round we are, so the caret, the selection
-     highlight, and the software keyboard match the page instead of guessing. */
+     highlight, and the software keyboard match the page instead of guessing.
+     This is the value for a boot where data-page never got set; the two rules
+     under it are the real ones. */
   color-scheme: dark light;
 
   /* ── Surface — dark, the default ──────────────────────────────────────────
@@ -53,14 +71,22 @@
      hardware can manage, and the archive reads as pictures and type in the
      dark rather than as a screen showing them.
 
-     Nothing is tinted. Every hue that got tried here (slate, warm brown, red,
-     and a charcoal that was really a grey) ended up being the app's one colour
-     by default, which is a decision the content should be making, not the
-     chrome.
+     Nothing is tinted HERE. Every hue that got tried in this file (slate, warm
+     brown, red, and a charcoal that was really a grey) ended up being the
+     app's one colour by default, which is a decision the content should be
+     making, not the chrome — so the shipped surface is still two colours and
+     the distance between them.
+
+     A CUSTOM PALETTE MAY OVERRIDE THE TWO LINES BELOW, and only those two. It
+     writes --void and --ink-rgb as an inline style on <html>, which beats any
+     rule in this file, and sets data-page to say which of the two step tables
+     underneath applies. Everything else — every step, the grain, the scrim —
+     is still computed here from whatever those two colours turn out to be.
+     See js/palette.js.
 
      The ink is kept as an unwrapped rgb triple so every step below it is one
-     colour at different strengths — swapping the theme is two lines, not
-     fifteen. */
+     colour at different strengths — swapping the surface is two lines, not
+     fifteen, and it is what lets a palette be two values instead of twelve. */
 
   --void:      #000;
   --ink-rgb:   255, 255, 255;
@@ -107,7 +133,14 @@
   --stack:     calc(var(--u) * 3);    /* 12 — between stacked text        */
   --stack-lg:  calc(var(--u) * 9);    /* 36 — between sections            */
   --nav-h:     calc(var(--u) * 12);   /* 48 — one composer pill           */
-  --tile-gap:  calc(var(--u) * 1.5);  /*  6 — moodboard, near-butted      */
+
+  /* THE WALL IS BUTTED. It was 6, which is a grid of photographs with a hair
+     of page showing between them, and a hair of page between two images is a
+     third thing on the screen. At 2 the images touch and the moodboard is one
+     surface made of pictures rather than two hundred framed items. The
+     lightbox uses the same number as its only padding, so an image opened from
+     the wall grows into the screen instead of into a mount. */
+  --tile-gap:  calc(var(--u) * 0.5);  /*  2 — moodboard, butted           */
 
   /* The composer floats, so content scrolls UNDER it. Every scroller ends
      with this much clearance or the last line sits behind the row. */
@@ -117,8 +150,12 @@
      divider, so the space between two branches is twice it and the hairline
      lands dead centre of that space. */
 
-  --tree-gap:  calc(var(--u) * 8);    /* 32 — half the space between branches */
-  --node-gap:  calc(var(--u) * 6);    /* 24 — leaf to leaf                    */
+  --tree-gap:  calc(var(--u) * 10);   /* 40 — half the space between branches */
+  --node-gap:  calc(var(--u) * 5);    /* 20 — leaf to leaf                    */
+  /* Those two moved APART from each other, and the gap between them is now the
+     home screen's whole rhythm: 80px between two 60px folder words, 20px
+     between the 13px rows under one. An open folder is a dense block hanging
+     off an enormous heading, rather than a list at one even pace. */
   --tree-x:    var(--page-x);         /* 24 — the tree's left edge IS the page
                                              margin. It used to be the icon
                                              column, with the type 36 further
@@ -128,36 +165,103 @@
                                              screen starts. See tree.js. */
 
   /* ── Type ─────────────────────────────────────────────────────────────────
-     Oxygen Light for everything, and Oxygen Bold for <strong> in prose. There
-     is one --font and every rule in the app inherits it; no stylesheet below
-     names a family of its own.
+     TWO FACES, and the line between them is the line between a NAME and a
+     SENTENCE.
 
-     The three title sizes — .folder__name at 30, .prose h2 at 26 and
-     .head__title at 38 — are the same job three sizes apart: the name of
-     something. They are told apart from the copy around them by being larger
-     and at full ink, which is the same grammar the rest of the chrome uses,
-     so a title reads as the top of a hierarchy rather than as a guest.
+       OXYGEN — everything you read, and everything you press. Light 300
+       carries the app; Bold 700 does two jobs and they are the same job at two
+       scales: every caps label in the archive, and `<strong>` inside writing.
+       Emphasis is mass, and a label is a stamp.
+
+       RIPOFFSTYLE — every title, and nothing else. It is a display face from
+       2001 and it is the reason the contents page reads as a different kind of
+       object from the pages it opens. A title is not a bigger version of the
+       words underneath it; setting one in the body face at 60px just makes the
+       body face very big.
+
+     RIPOFF IS SET IN TWO WEIGHTS AND THEY MEAN DEPTH.
+
+       NORMAL 700   the five words of the home screen. The contents page is a
+                    poster and it is the loudest thing in the archive.
+       THIN 400     the head of a page, and the headings inside one. Quieter
+                    than the word you tapped to get here, because you are about
+                    to read underneath it.
+
+     So the archive gets quieter the further in you go — 60px of solid display
+     face on the contents page, 72px of hairline display face at the head of
+     what it opened, 17px of Oxygen Light for the writing itself. Which is the
+     right way round for something built to read in.
+
+     THE SCALE IS TWO CLUSTERS AND A CANYON.
+
+       11 13 15 17    everything functional, and the reading copy. Bold caps at
+                      the bottom of it, Light at the top.
+       ---- nothing ----
+       30 56 60       the three sizes of title. All Ripoff.
+
+     There is nothing between 17 and 30 and there is not supposed to be. It was
+     a geometric ramp — each step about 1.3× the last — which is what you build
+     when every size has to be able to sit next to every other one. A folder
+     word is nearly four times the row beneath it now, not one comfortable step
+     above it, and the space that opens up between them is the layout.
 
      Italic belongs to writing only: .prose em and the I in the editor's mark
      row. Nothing in the chrome leans. */
 
-  --font:         'Oxygen', -apple-system, system-ui, sans-serif;
-  --w:            300;
-  --w-bold:       700;
+  --font:       'Oxygen', -apple-system, system-ui, sans-serif;
+  --w:          300;
+  --w-bold:     700;
 
-  --t-micro:   11px;   /* caps labels, dates, authors      */
-  --t-meta:    13px;   /* captions, secondary               */
-  --t-row:     15px;   /* leaf rows in the tree             */
-  --t-body:    17px;   /* reading copy — essays live here   */
-  --t-title:   26px;   /* headings inside an essay          */
-  --t-folder:  30px;   /* folder rows — size IS the weight  */
-  --t-display: 38px;   /* essay and work titles             */
+  /* Falls back to --font, not to a system face. Ripoff carries Latin-1 and no
+     further, so a title with a character outside that coverage sets that one
+     word in Oxygen — which is a legible seam rather than an arbitrary third
+     typeface arriving on one screen. */
+  --font-title:   'Ripoff', var(--font);
+  --w-title:      400;   /* Thin   — a page's own title   */
+  --w-title-bold: 700;   /* Normal — the home screen only */
+
+  --t-micro:   11px;   /* caps labels, dates, counts — BOLD   */
+  --t-meta:    13px;   /* captions, secondary                 */
+  --t-row:     15px;   /* leaf rows, card rows, the field     */
+  --t-body:    17px;   /* reading copy — essays live here     */
+  --t-title:   30px;   /* headings inside an essay — Ripoff   */
+  --t-folder:  60px;   /* the home screen's five words        */
+  --t-display: 56px;   /* essay and work titles — see below   */
 
   --track-caps:   0.16em;
-  --track-tight: -0.015em;   /* large sizes only — light type at 38px
-                                otherwise drifts apart */
-  --leading:       1.5;      /* body copy                */
-  --leading-tight: 1.12;     /* display                  */
+
+  /* The three title sizes only, and it is a DIFFERENT problem from the one it
+     used to solve. It was -0.015em, holding 38px of Oxygen Light together.
+     Ripoff at 60 and 72 is a geometric face whose default fit is drawn for a
+     word or two at poster size — it does not fall apart, it sits loose, and a
+     small pull is what makes five words read as one object. */
+  --track-tight: -0.02em;
+
+  --leading:       1.6;      /* body copy                             */
+  --leading-tight: 1.1;      /* rows, labels, anything one line high  */
+
+  /* The folder words of the home screen. Just under 1, so a branch is the word
+     and nothing around it. */
+  --leading-display: 0.98;
+
+  /* A PAGE'S OWN TITLE, AND ONLY THAT — the one thing in the app set as a
+     BLOCK rather than as lines. .head__title is justified to both edges with
+     its last line justified too, and this is the leading that turns that into
+     a solid rectangle of type instead of a stack of stretched sentences.
+
+     0.80 IS THE FLOOR AND IT IS A FACT ABOUT RIPOFF, NOT A TASTE. The face
+     draws to exactly 0.80em above the baseline and, apart from q and the
+     comma, nothing at all below it — so at 0.80 the caps of one line stand
+     directly on the caps of the next with nothing between them, which is as
+     solid as type gets while still being type. Below this the lines do not
+     tighten, they MERGE: the next line's caps climb into the one above and the
+     words stop being separately readable. If it needs to go further the answer
+     is a smaller --t-display, not a smaller number here — that packs more
+     lines into the same block without printing them through each other.
+
+     In almost any other face 0.80 would already be an overlap. This one is
+     drawn on a flat cap line with no descender, which is why it can do it. */
+  --leading-block: 0.80;
 
   /* ── Form ─────────────────────────────────────────────────────────────────
      A rounded pill, or nothing. --r-2 is the one middle ground and it exists
@@ -212,36 +316,66 @@
   --z-grain:    400;
 }
 
-/* ── Surface — light ────────────────────────────────────────────────────────
-   Follows the phone, no switch in the app: a private archive shouldn't have
-   opinions its owner's device doesn't already hold.
+/* ── Which surface is showing ───────────────────────────────────────────────
+   ONE ATTRIBUTE DECIDES, and it is on <html>: data-page is "dark" or "light".
 
-   The two themes are the same two colours in either order. It is NOT a
+   It used to be `@media (prefers-color-scheme: light)` and nothing else, which
+   was correct while the app had exactly two surfaces and no opinion of its
+   own. It now has a palette, and a palette can put dark ink on a light ground
+   the phone knows nothing about — so the question the steps below need
+   answered is not "what mode is the phone in" but "IS THE PAGE THE LIGHTER OF
+   THE TWO COLOURS", which only the app can answer.
+
+   So the boot script in index.html sets data-page before the first paint —
+   from the stored palette if there is one, from the phone if there isn't — and
+   js/palette.js keeps it in step with the phone for as long as there isn't.
+   Two rules, each written once. Asking the media query as well would mean
+   writing every step below twice, because a media query cannot join a selector
+   list, and the two copies would drift.
+
+   THE COST, NAMED: with JS broken, the app is dark on a light phone. The whole
+   archive is rendered by JS — there is nothing to look at in that state
+   anyway — but the boot script is now load-bearing for something visual, and
+   that is worth knowing before someone tidies it away. */
+
+:root[data-page="dark"]  { color-scheme: dark; }
+:root[data-page="light"] { color-scheme: light; }
+
+/* ── Surface — light ────────────────────────────────────────────────────────
+   The two surfaces are the same two colours in either order. It is NOT a
    straight inversion: dark ink on a light ground reads heavier at the same
    opacity than light ink on a dark one, so every step below full ink is set a
    little stronger here. That's what keeps the hierarchy identical rather than
-   merely the ratios. */
+   merely the ratios.
 
-@media (prefers-color-scheme: light) {
-  :root {
-    --void:      #fff;
-    --ink-rgb:   0, 0, 0;
+   A CUSTOM PALETTE LANDS IN THIS BLOCK TOO whenever its page is the lighter of
+   its two colours. It supplies its own --void and --ink-rgb inline, and
+   everything underneath is these steps applied to whatever those two colours
+   are. Which is why a palette is two values and not fourteen: the rest is a
+   function of them, and stays in this file. */
 
-    --ink-2:     rgba(var(--ink-rgb), 0.66);
-    --ink-3:     rgba(var(--ink-rgb), 0.44);
-    --ink-4:     rgba(var(--ink-rgb), 0.26);
-    --rule:      rgba(var(--ink-rgb), 0.26);
-    --rule-soft: rgba(var(--ink-rgb), 0.12);
-    --wash:      rgba(var(--ink-rgb), 0.06);
-    --ink-prose: rgba(var(--ink-rgb), 0.82);
+:root[data-page="light"] {
+  --void:      #fff;
+  --ink-rgb:   0, 0, 0;
 
-    /* Multiply, so the grain settles into the page instead of blowing it out.
-       Lower, because noise is far more visible on a light ground. */
-    --grain:       0.045;
-    --grain-blend: multiply;
+  --ink-2:     rgba(var(--ink-rgb), 0.66);
+  --ink-3:     rgba(var(--ink-rgb), 0.44);
+  --ink-4:     rgba(var(--ink-rgb), 0.26);
+  --rule:      rgba(var(--ink-rgb), 0.26);
+  --rule-soft: rgba(var(--ink-rgb), 0.12);
+  --wash:      rgba(var(--ink-rgb), 0.06);
+  --ink-prose: rgba(var(--ink-rgb), 0.82);
 
-    --scrim:     rgba(0, 0, 0, 0.42);
-  }
+  /* Multiply, so the grain settles into the page instead of blowing it out.
+     Lower, because noise is far more visible on a light ground. */
+  --grain:       0.045;
+  --grain-blend: multiply;
+
+  /* Still black, not "the ink". A scrim's job is to push what's behind it
+     away, and away is darker in both surfaces and under every palette — a
+     scrim made of a light ink would be a wash of the foreground colour over
+     the app, which reads as fog rather than as depth. */
+  --scrim:     rgba(0, 0, 0, 0.42);
 }
 
 /* Wider screens get more margin. Ratios are untouched — only the page margin

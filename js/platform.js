@@ -82,6 +82,44 @@ export async function writeIndex(data) {
   }
 }
 
+/* ── The palette ────────────────────────────────────────────────────────────
+   Two colours and the two things derived from them, under one key. Tiny, read
+   once at boot, written when it changes — and, unlike the index, it is read
+   SYNCHRONOUSLY, because the alternative is the app painting one colour and
+   then another while you watch. Hence no promise here.
+
+   ABSENT MEANS AUTO. There is no "mode: auto" value to store: the archive
+   following light and dark mode is the state of having no palette, so setting
+   one back to pure black and white removes the key rather than writing black
+   and white into it. See js/palette.js, which owns every decision about what
+   the two colours mean; this only puts them somewhere.
+
+   The boot script in index.html reads this same key directly, and that is the
+   one place in the app allowed to go round this file — it has to run before
+   any module does. It writes nothing. */
+
+const PALETTE_KEY = 'archive.palette';
+
+export function readPalette() {
+  try {
+    return JSON.parse(localStorage.getItem(PALETTE_KEY) || 'null');
+  } catch (e) {
+    // A palette that won't parse is a palette you can reset by opening the
+    // card. Never worth throwing at boot over.
+    return null;
+  }
+}
+
+/** Null clears it, which is what returns the archive to following the phone. */
+export function writePalette(pal) {
+  try {
+    if (pal) localStorage.setItem(PALETTE_KEY, JSON.stringify(pal));
+    else localStorage.removeItem(PALETTE_KEY);
+  } catch (e) {
+    console.error('could not save the palette', e);
+  }
+}
+
 /* ── Binary media ───────────────────────────────────────────────────────────
    Photographs you add, as blobs in IndexedDB behind object URLs. Not
    localStorage: that is a string store, base64 costs a third again in size,

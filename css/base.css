@@ -70,7 +70,7 @@ html {
   /* viewport-fit=cover pulls the document UP so it starts behind the status
      bar, but doesn't grow it to match — so a plain 100% falls exactly
      env(safe-area-inset-top) short of the TRUE bottom edge. Nothing in the
-     app paints that missing strip, .view's own position:fixed;inset:0
+     app paints that missing strip, .view's own position:fixed sizing
      included, so the home indicator sits over WKWebView's bare default
      background instead of --void. Growing the box down by the same amount
      the top ate is the fix — a documented WebKit quirk, not a bug in .view

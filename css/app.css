@@ -12,10 +12,26 @@
 
 /* Every view runs edge to edge. The composer floats over the bottom of it
    rather than sitting in a reserved strip, so content passes underneath and
-   the screen reads as one surface. --float-clear buys back the room. */
+   the screen reads as one surface. --float-clear buys back the room.
+
+   HEIGHT IS --vvh, NOT inset:0's implied 100%. iOS resizes the VISUAL
+   viewport when the keyboard opens but leaves the LAYOUT viewport — the one
+   percentages and `fixed` are measured against — exactly as tall as it was.
+   Left at 100%, .view (and .body.scroller inside it) stay the full,
+   pre-keyboard height, so their true visible portion is only ever the top
+   slice the keyboard hasn't covered. A drag in that slice lands on a
+   contenteditable whose ancestor scroller still believes it has the whole
+   screen to give, and iOS won't hand a manual scroll gesture up to a
+   container sized past what's actually on screen — the note LOOKS stuck.
+   `--vvh`, kept live by the visualViewport listener in app.js, is the actual
+   visible height, keyboard included; .view tracking it is what makes the
+   scroller's own bounds honest again. Falls back to 100% where there's no
+   keyboard to account for, which is every screen but the editor and any
+   other text field. See the listener in app.js before touching this. */
 .view {
   position: fixed;
-  inset: 0;
+  top: 0; left: 0; right: 0;
+  height: var(--vvh, 100%);
   display: flex;
   flex-direction: column;
   background: var(--void);

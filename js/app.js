@@ -37,6 +37,29 @@ const searchField = document.getElementById('composer-search');
 
 const SEARCH_ROUTE = '#/search';
 
+/* ── Keyboard-aware height ─────────────────────────────────────────────────
+   iOS shrinks the VISUAL viewport when the keyboard opens and leaves the
+   LAYOUT viewport alone, so `.view`'s own `height: 100%` never learns the
+   keyboard exists. Left alone, that's what breaks free scrolling in the
+   editor: `.body.scroller` inside .view is sized to the whole pre-keyboard
+   screen, and iOS won't hand a manual drag up to a scroller whose bounds
+   reach past what's actually visible when the drag starts on a focused
+   contenteditable. `--vvh` is the fix — the true visible height, kept live
+   here and read by `.view` in app.css — and it's the only thing this does;
+   no scroll-jacking, nothing else reacts to it. `visualViewport` is absent
+   only in browsers this app doesn't target, so the CSS fallback to 100%
+   never actually fires — it's there for that hypothetical, not this one. */
+function syncViewportHeight() {
+  const vv = window.visualViewport;
+  const h = vv ? vv.height : window.innerHeight;
+  document.documentElement.style.setProperty('--vvh', `${h}px`);
+}
+if (window.visualViewport) {
+  visualViewport.addEventListener('resize', syncViewportHeight);
+  visualViewport.addEventListener('scroll', syncViewportHeight);
+}
+syncViewportHeight();
+
 /* Scroll position per route, so returning to a long list puts you back where
    you were rather than at the top. */
 const scrollMemory = new Map();

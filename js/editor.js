@@ -72,6 +72,7 @@ import * as store from './store.js';
 import { toSrc, fromSrc } from './media.js';
 import { el, icon, body, page, toast, card, confirm } from './ui.js';
 import { tick, selectionTick } from './platform.js';
+import { borrowComposer } from './app.js';
 
 const AUTOSAVE_MS = 700;
 
@@ -784,6 +785,15 @@ export function render(path, nav, into = null) {
   // comment above. Changes what's offered in view.__chrome, below.
   const isNote = (existing ? existing.path : home).startsWith('braindumps/');
 
+  // A published note opens dormant, per the header comment — and dormant means
+  // there is nothing to decide, so Done has no reason to be on screen either.
+  // It earns its place the moment the words are actually touched; see
+  // activate() below. A draft is exempted: Publish is the one thing worth
+  // reaching for on a draft you're merely reopening, without touching a
+  // keystroke first. And a brand-new note is never dormant to begin with — it
+  // gets the keyboard immediately, a few lines down.
+  let dormant = isNote && existing && !existing.draft;
+
   const view = el('div.view.view--bare');
 
   /* The title is a contenteditable and not an <input>, which is the difference
@@ -834,12 +844,31 @@ export function render(path, nav, into = null) {
 
   view.__chrome = {
     back: true,
-    main: { label: mainLabel(), onclick: onMain },
+    // Withheld on a dormant note — see activate() below, which is what puts
+    // it on screen once there's actually something to finish.
+    ...(dormant ? {} : { main: { label: mainLabel(), onclick: onMain } }),
     // Essays don't get this — Delete is still behind the ⋯ on the page they
     // publish to. A note never leaves this screen, so this is its only ⋯,
     // and Edit has no place on it: tapping into the words already is that.
     ...(isNote ? { more: noteActionsCard } : {}),
   };
+
+  // The first real touch wakes a dormant note up. One-way: once Done has a
+  // reason to exist it stays on screen for the rest of this visit, rather
+  // than chasing focus in and out with every blur — which would race the tap
+  // on Done itself, since a mousedown there blurs the body a beat before the
+  // click that reads `actions.main` arrives. Leaving is what tears this
+  // screen down anyway, so there's nothing to put back.
+  function activate() {
+    if (!dormant) return;
+    dormant = false;
+    view.__chrome.main = { label: mainLabel(), onclick: onMain };
+    borrowComposer(view.__chrome, false);
+  }
+  if (dormant) {
+    title.addEventListener('focus', activate);
+    bodyEl.addEventListener('focus', activate);
+  }
 
   function mainLabel() {
     return isDraft ? 'Publish' : 'Done';
@@ -934,12 +963,25 @@ export function render(path, nav, into = null) {
   async function onMain() {
     await flush();
 
-    // Already published — there is nothing to decide, so Done just shows you
-    // the piece. Going back would be one tap shy of that and would land on
-    // nothing at all if the editor was the first screen of the session.
+    // Already published — there is nothing to decide, so Done just closes the
+    // editor. A NOTE stays right where it is: it was opened straight at
+    // #/e/<path> and that IS its permanent screen, so Done re-renders it in
+    // place (which is also what drops the keyboard and collapses the marks
+    // row). An ESSAY only ever reaches this branch through #/write, which
+    // entries.js only ever pushes from that exact essay's own reader — so the
+    // entry one back is already #/e/<path>, about to show these same edits
+    // once flush() lands. Replacing here instead of popping to it would leave
+    // two history entries at that identical hash, and because the hash isn't
+    // changing, the NEXT back press would silently do nothing before the one
+    // after it actually left — which reads as the back button going back into
+    // the editor. Popping avoids stacking that duplicate in the first place.
     if (!isDraft) {
-      if (currentPath) nav(`#/e/${encodeURIComponent(currentPath)}`, true);
-      else history.back();
+      if (isNote) {
+        if (currentPath) nav(`#/e/${encodeURIComponent(currentPath)}`, true);
+        else history.back();
+      } else {
+        nav.back();
+      }
       return;
     }
 
@@ -957,6 +999,7 @@ export function render(path, nav, into = null) {
 
     const prefix = currentPath.slice(0, currentPath.lastIndexOf('/') + 1);
     const slug = slugify(node.title) || currentPath.split('/').pop();
+    const before = currentPath;
 
     // move() is the one that knows the final path: it declines a no-op rename
     // and suffixes a slug that's already taken, so the answer comes back from
@@ -969,9 +1012,18 @@ export function render(path, nav, into = null) {
 
     tick('Medium');
     toast('Published');
-    // Replace, not push: the draft you were editing is gone as a destination,
-    // and a back tap should land on the tree rather than on a dead path.
-    nav(`#/e/${encodeURIComponent(currentPath)}`, true);
+
+    // A fresh draft started from #/new/ has no reader behind it — the entry
+    // one back is the folder it was started from, a different hash, so it's
+    // safe and necessary to replace this screen with the published piece.
+    // But a DRAFT reopened for another pass through #/write already has its
+    // own reader sitting one entry back, and if the title didn't change
+    // enough to rename it, that reader is at this exact hash. Replacing in
+    // that case would stack a second identical entry, and the same silent
+    // double-back-press bug as onMain's Done branch above follows — so pop
+    // to the existing reader instead of duplicating it.
+    if (path && currentPath === before) nav.back();
+    else nav(`#/e/${encodeURIComponent(currentPath)}`, true);
   }
 
   /* The only thing on a note's ⋯. See view.__chrome above for why it exists

@@ -57,6 +57,12 @@ function goBack() {
   else nav('#/', true);
 }
 
+// Handed to every screen alongside nav itself, so a view that needs to leave
+// rather than go somewhere specific — the editor finishing an edit, not
+// navigating to one — doesn't have to reach for the bare history.back() that
+// goBack() exists to guard. See editor.js's onMain and publish().
+nav.back = goBack;
+
 /* ── Render ─────────────────────────────────────────────────────────────── */
 
 async function render() {
@@ -176,15 +182,18 @@ function dressComposer(chrome) {
   if (main) pill.main.textContent = main.label;
 }
 
-/* A screen can change its own mind without changing route. One caller today:
+/* A screen can change its own mind without changing route. Two callers today:
    the lightbox, which covers everything without being a route and would
    otherwise have to draw a close button and a delete button of its own — back
    is back and trash is trash wherever you are, in the corners your thumb
-   already knows.
+   already knows; and editor.js's activate(), which puts Done on screen the
+   moment a dormant note is actually touched, rather than the moment it's
+   merely opened.
 
    The caller gets its previous shape back as a function to call on the way
    out. `over` lifts the row above a full-screen overlay for as long as it's
-   lent out; a mode that stays inside its own view doesn't need it. */
+   lent out; a mode that stays inside its own view doesn't need it — the
+   lightbox uses it, editor.js's dormant note doesn't. */
 export function borrowComposer(chrome, over = true) {
   const previous = actions;
   composer.classList.toggle('composer--over', over);

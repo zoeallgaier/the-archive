@@ -143,8 +143,15 @@
   --tile-gap:  calc(var(--u) * 0.5);  /*  2 — moodboard, butted           */
 
   /* The composer floats, so content scrolls UNDER it. Every scroller ends
-     with this much clearance or the last line sits behind the row. */
-  --float-clear: calc(var(--nav-h) + var(--gutter) + env(safe-area-inset-bottom, 0px));
+     with this much clearance or the last line sits behind the row.
+
+     NO SAFE-AREA TERM ANY MORE, and that is not an oversight — the composer
+     itself dropped its env(safe-area-inset-bottom) so the row sits a plain
+     gutter off the true bottom edge and the home indicator floats over the
+     app rather than over a reserved strip. This has to be exactly the height
+     the composer occupies or the last row in a list ends up behind it, so the
+     two numbers move together. See .composer in app.css. */
+  --float-clear: calc(var(--nav-h) + var(--gutter));
 
   /* The rhythm of the home screen. --tree-gap is the air on EACH side of a
      divider, so the space between two branches is twice it and the hairline
@@ -225,8 +232,27 @@
   --t-row:     15px;   /* leaf rows, card rows, the field     */
   --t-body:    17px;   /* reading copy — essays live here     */
   --t-title:   30px;   /* headings inside an essay — Ripoff   */
-  --t-folder:  60px;   /* the home screen's five words        */
-  --t-display: 56px;   /* essay and work titles — see below   */
+  --t-folder:  68px;   /* the home screen's five words        */
+  --t-display: 68px;   /* essay and work titles — see below   */
+
+  /* --t-folder went up with the tree words becoming OUTLINES rather than
+     solid type. An outline puts a fraction of the ink on the screen that a
+     filled letter does, so at 60 the home screen went quiet in a way that was
+     never the intention — the five words are still the loudest thing in the
+     app, they are just drawn rather than printed. Eight more pixels buys back
+     the presence the fill was carrying. See .folder__name in app.css.
+
+     --t-display went 56 → 68, and it went to 90 on the way. 90 was a title
+     that WAS the page: four lines of it on almost everything in the archive,
+     with the copy beginning somewhere below the fold. 68 is the same idea one
+     step back — two or three lines for a real title, still a solid justified
+     rectangle at --leading-block, but the first paragraph is on screen with
+     it. A title that has to be scrolled past is a cover, not a heading.
+
+     It is set BOLD now regardless of the size — the tree gave up its fill and
+     the page title took it, so the two heaviest things in the archive are
+     never on screen at the same time. That is the part that mattered; the
+     number is a taste dial on top of it. */
 
   --track-caps:   0.16em;
 
@@ -282,6 +308,14 @@
   --r-2:    calc(var(--u) * 5);    /* 20 — cards, panels       */
   --r-pill: 999px;
   --hair:   1px;
+
+  /* The tree words, and nothing else in the app, are drawn as outlines. 1.5 is
+     what survives the round trip: --hair is invisible against 68px of Ripoff
+     Normal and reads as a rendering artefact, and 2 closes the counters in the
+     o and the a at the sizes the shorter words set at. This is a stroke on
+     type rather than a rule, so it is deliberately NOT --hair — it does not
+     want to match the outline on a pill. */
+  --stroke-title: 1.5px;
 
   /* ── Texture ──────────────────────────────────────────────────────────────
      One layer, everywhere: grain over the whole app. The home screen briefly

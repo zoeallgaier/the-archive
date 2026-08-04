@@ -31,7 +31,15 @@
 .body {
   flex: 1;
   min-height: 0;
-  padding-bottom: calc(var(--float-clear) + var(--stack-lg));
+  /* --float-clear is exactly the composer, so this term is the ROOM TO REACH:
+     the last note in a folder has to end up somewhere a thumb can land on it,
+     and a list that stops the instant it clears the pills puts its final row
+     in the one band of the screen your hand is already covering. 96 is about
+     two rows of slack — you scroll past the end and the thing you want comes
+     up into the middle of the phone. Everything above this line is content;
+     this is the only padding in the app that exists for the hand rather than
+     for the eye. */
+  padding-bottom: calc(var(--float-clear) + var(--u) * 24);
 }
 
 /* No view has a header. `view--bare` is the acknowledgement of that: it buys
@@ -72,7 +80,14 @@
 .body--center {
   display: flex;
   flex-direction: column;
-  padding: var(--float-clear) 0;
+  /* ASYMMETRIC ON PURPOSE, and it is the home screen's version of the tail in
+     .body above — which this shorthand would otherwise wipe out, and did. The
+     tree is the one list in the app whose last row is a NOTE you want to open
+     rather than the end of an article, and it was landing a bare gutter above
+     the composer, in the band your thumb covers to reach it. The top stays at
+     --float-clear so a tree short enough to centre still centres against
+     something; only the bottom carries the reach. */
+  padding: var(--float-clear) 0 calc(var(--float-clear) + var(--u) * 24);
 }
 
 .tree {
@@ -104,15 +119,31 @@
   flex: 1;
   min-width: 0;
   font-size: var(--t-folder);
-  /* THE ONE PLACE THE ARCHIVE SHOUTS. Ripoff Normal, the heavy weight of the
-     display face, against Ripoff Thin at 72 on the page it opens and Oxygen
-     everywhere you read. The contents page is the only screen in the app that
-     is nothing but names, so it is the only one that can afford to be made
-     entirely of one. See the weight doctrine in tokens.css. */
+  /* THE ONE PLACE THE ARCHIVE SHOUTS, AND IT SHOUTS IN OUTLINE. Ripoff Normal
+     — the heavy weight of the display face — drawn rather than filled: no ink
+     inside the letters at all, just the edge of them at --stroke-title.
+
+     This is the home screen giving up the one thing it had over every other
+     screen. It was 60px of solid ink and it was, by a wide margin, the
+     heaviest object in the app; the page title it opens is now the heaviest
+     object in the app instead. Which means the two never compete, because
+     they are never on screen together: the tree is the outline of five words
+     and the page behind each one is a solid block of type. Opening a folder
+     is the archive filling in.
+
+     -webkit-text-stroke IS THE ONLY WAY TO DO THIS and it is not a fallback.
+     The standard `paint-order` + stroke properties for text are SVG-only in
+     WebKit, and the alternative — a duplicated ::before in the page colour
+     behind a filled word — is two copies of every folder name in the DOM for
+     one visual effect. The prefix is permanent, universally supported, and
+     draws the stroke CENTRED on the glyph outline, which is why the weight in
+     tokens.css is tuned against the counters rather than picked. */
   font-family: var(--font-title);
   font-weight: var(--w-title-bold);
   letter-spacing: var(--track-tight);
   line-height: var(--leading-display);
+  color: transparent;
+  -webkit-text-stroke: var(--stroke-title) var(--ink);
 }
 
 .folder__count {
@@ -258,7 +289,13 @@
 .head__title {
   font-family: var(--font-title);
   font-size: var(--t-display);
-  font-weight: var(--w-title);
+  /* NORMAL, NOT THIN, AND AT 90px. Both moved at once and for one reason: the
+     tree words above went hollow, so the solid weight of the display face was
+     free and the title of the thing you actually opened is where it belongs.
+     A page now reads as one enormous justified block of type with the copy
+     beginning underneath it, which at --leading-block is a rectangle rather
+     than a heading. See the two notes in tokens.css. */
+  font-weight: var(--w-title-bold);
   letter-spacing: var(--track-tight);
   line-height: var(--leading-block);
   text-align: justify;
@@ -764,7 +801,15 @@
 .composer {
   position: fixed;
   left: 0; right: 0;
-  bottom: calc(var(--gutter) + env(safe-area-inset-bottom, 0px));
+  /* ONE GUTTER OFF THE TRUE BOTTOM EDGE. There was an
+     env(safe-area-inset-bottom) here too, which on a notched phone put the row
+     50px up and left an empty band under it that read as a reserved strip the
+     app was not allowed into. The home indicator is a 5px bar iOS draws OVER
+     the page, not a region it takes away, and a 48px pill starting 16px up
+     clears it. So the archive runs to the physical bottom of the glass and the
+     indicator floats on top of it, the same way the status bar now floats on
+     top of the other end. --float-clear tracks this number; see tokens.css. */
+  bottom: var(--gutter);
   z-index: var(--z-nav);
   display: flex;
   align-items: center;
@@ -925,7 +970,9 @@
 .card {
   position: fixed;
   left: 0; right: 0;
-  bottom: calc(var(--gutter) + env(safe-area-inset-bottom, 0px));
+  /* The same edge as the composer, because this IS the composer expanded —
+     they must never sit at two different heights. See .composer above. */
+  bottom: var(--gutter);
   z-index: calc(var(--z-sheet) + 1);
   padding: 0 var(--page-x);
   opacity: 0;

@@ -67,22 +67,32 @@ import { card, el, toast } from './ui.js';
    and white palette" are the same state and cannot come apart. Everything
    below it is a real pair and is kept exactly as given.
 
-   Five of them, and they are a RANGE rather than a mood board: black and
-   white, then two that are nearly black and white, then two that are not.
+   FOUR OF THEM, AND IT WAS SIX. Oxblood, Blueprint and Manila are gone —
+   three pairs that were each a tint of a neutral, which is what you get when
+   you fill a list by generating variations instead of choosing. Held next to
+   Newsprint they were the same idea at three different hues, and a list of
+   near-identical answers is a worse question than a short one. What is left is
+   a RANGE: black and white, then one that is nearly black and white, then two
+   that are not remotely.
 
-   Acid is the lime the app icon used to be drawn in, kept reachable because it
-   was the one hue this archive ever had. It is also the only pair here where
-   the light colour is the loud one — in light mode the whole page goes lime,
-   which is either the best or the worst thing in this list depending on the
-   hour, and that is a decision for the person holding the phone. */
+   BONDI is the 1998 iMac — deep Bondi Blue against the translucent grey-white
+   of the shell it was moulded in. Worth being straight about the date, since
+   the archive cares: Bondi Blue was the ONLY colour the iMac came in in 1998.
+   The five fruit flavours — Strawberry, Blueberry, Lime, Grape, Tangerine —
+   are the 5-flavour revision of January 1999. So there is one '98 iMac pair
+   here rather than five, because there was one '98 iMac.
+
+   BRAT is the lime the app icon used to be drawn in, at the album's own green.
+   It is the only pair here where the LIGHT colour is the loud one — in light
+   mode the whole page goes lime and the type goes black on it, which is either
+   the best or the worst thing in this list depending on the hour, and that is
+   a decision for the person holding the phone. */
 
 const PRESETS = [
   { name: 'Auto',      dark: '#000000', light: '#ffffff', ships: true },
   { name: 'Newsprint', dark: '#141414', light: '#f2efe7' },
-  { name: 'Oxblood',   dark: '#2a0b10', light: '#f0e6e2' },
-  { name: 'Blueprint', dark: '#0a1826', light: '#d6e4f0' },
-  { name: 'Manila',    dark: '#1a1408', light: '#efe2c4' },
-  { name: 'Acid',      dark: '#000000', light: '#c9ff57' },
+  { name: 'Bondi',     dark: '#004e61', light: '#dfeeed' },
+  { name: 'Brat',      dark: '#000000', light: '#8ace00' },
 ];
 
 /* ── Colour ─────────────────────────────────────────────────────────────────
@@ -101,6 +111,15 @@ const inkOf  = (pair, mode) => (mode === 'light' ? pair.dark : pair.light);
 
 const cssFor = (pair, mode) =>
   `--void:${pageOf(pair, mode)};--ink-rgb:${rgb(inkOf(pair, mode)).join(',')}`;
+
+/* ONE NAME CHANGED, AND A STORED PALETTE IS THE ONE PIECE OF STATE IN THIS
+   APP THAT SURVIVES A DEPLOY. Acid became Brat and its green moved to the
+   album's own #8ACE00, so a phone with Acid selected would come back on a
+   colour that is no longer in the list, with no row lit to say which one it
+   was on. Migrated on read — boot re-saves whatever this returns, so the old
+   name is gone from storage one launch later and this map could be deleted a
+   long way down the line. Anything not in here is kept exactly as stored. */
+const RENAMED = { Acid: 'Brat' };
 
 /* The pair that means "no palette" — see the header. Compared on both colours
    rather than by name, so a preset that happens to BE black and white would
@@ -155,7 +174,10 @@ function apply(pair) {
 export function current() {
   const saved = readPalette();
   if (!saved || !saved.dark || !saved.light) return null;
-  const pair = { name: saved.name, dark: saved.dark, light: saved.light };
+  const renamed = PRESETS.find((p) => p.name === RENAMED[saved.name]);
+  const pair = renamed
+    ? { name: renamed.name, dark: renamed.dark, light: renamed.light }
+    : { name: saved.name, dark: saved.dark, light: saved.light };
   return isShipped(pair) ? null : pair;
 }
 

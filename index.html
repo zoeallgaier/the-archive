@@ -21,17 +21,38 @@
      is opened from a phone homescreen and a Mac dock, and neither format
      covers both.
 
-     STATUS BAR STYLE IS `default`, NOT `black-translucent`. Translucent buys
-     full-bleed content running under the clock — which is what
-     env(safe-area-inset-top) in app.css is paying for — but it also forces the
-     status bar's text WHITE permanently, and this app has a real light theme
-     with a white ground. In daylight the clock and the battery would be white
-     on white. `default` hands the status bar to the theme-color metas above,
-     which are already declared per colour-scheme, so it stays legible in both.
-     Two themes that both work beats one theme that runs 20px taller. -->
+     STATUS BAR STYLE IS `black-translucent`, AND IT WAS `default`. This is the
+     one setting in the app that buys something real and charges something
+     real, so the trade is written down rather than rediscovered.
+
+     WHAT IT BUYS: the status bar stops being a bar. `default` reserves a strip
+     at the top of the screen, fills it with the theme-color, and starts the
+     web content underneath it — so the archive was a page inside a frame, at
+     both ends, and the bottom end has now given up its reserved strip too (see
+     .composer in app.css). Translucent hands the whole pane of glass to the
+     app and draws the clock and the battery straight over it. A photograph
+     opened in the lightbox reaches the top of the phone. Nothing in the layout
+     collides with the clock, because .view--bare already pays
+     env(safe-area-inset-top) for exactly this.
+
+     WHAT IT COSTS: the status bar glyphs are WHITE, permanently and
+     unconditionally. There is no light variant of this setting and no media
+     query reaches it. On a dark page — black, Newsprint dark, deep Bondi —
+     that is correct. On a LIGHT page it is white on cream, white on ice, and
+     white on lime, which is a clock you can see the shape of and not read.
+     That is half the palettes half the day, and it is a deliberate choice made
+     with the cost known: the archive gains a full screen and loses a legible
+     clock in daylight. Changing this one word back to `default` reverses both
+     halves of that and nothing else in the app needs to move.
+
+     NOTE THAT THIS META DOES NOTHING IN SAFARI ITSELF. It applies only once
+     the URL is on the homescreen. In a Safari tab the top and bottom bars are
+     Safari's own chrome; the page's only influence over them is the
+     theme-color metas above, which the palette already keeps identical to the
+     page colour, so they are as close to invisible as a page can make them. -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Archive">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="icon" href="icons/icon-192.png" type="image/png">

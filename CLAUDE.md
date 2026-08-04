@@ -138,7 +138,7 @@ js/store.js         the node index, in memory, one JSON blob behind it
 js/platform.js      storage, camera roll, feedback — the ONLY file that
                     touches localStorage, IndexedDB or a file input
 js/media.js         image paths → renderable URLs; camera-roll import
-js/palette.js       the six palettes, and the two colours the app is made of
+js/palette.js       the four palettes, and the two colours the app is made of
 js/ui.js            el(), card(), toast(), confirm(), the shared vocabulary
 js/tree.js          home screen
 js/entries.js       the reader
@@ -206,7 +206,8 @@ before changing anything visual. In short:
 
   A palette is a **pair** — one dark colour, one light — and **the two swap with
   `prefers-color-scheme`**, so every palette follows the phone the way pure black
-  and white always did. Six of them live in `js/palette.js`; the ⌗ pill at the
+  and white always did. Four of them live in `js/palette.js` — Auto, Newsprint,
+  Bondi (the 1998 iMac) and Brat; the ⌗ pill at the
   bottom-left of the home screen opens the card. **Auto is pure black and white
   and is stored as nothing at all**, so "no palette" and "the black-and-white
   palette" are the same state and cannot come apart.
@@ -215,6 +216,18 @@ before changing anything visual. In short:
   the scrim — is those two colours through the step table in `tokens.css`. That
   is why recolouring the app cannot change its grammar. **Do not add a colour
   anywhere else.**
+- **The tree is outlined, the page it opens is solid.** The home screen's five
+  words are `-webkit-text-stroke` at `--stroke-title` with a transparent fill —
+  no ink inside the letters. The page title behind each one is Ripoff Normal,
+  filled, at `--t-display`. So the heaviest object in the app is never on screen
+  twice, and opening a folder reads as the archive filling in. Changing either
+  one without the other puts them back in competition.
+- **Nothing is inset from the top or bottom edge of the glass.** The status bar
+  is `black-translucent` and the composer sits one gutter off the true bottom,
+  with no `env(safe-area-inset-bottom)` anywhere. Both cost something and both
+  costs are written down at the sites — see the meta block in `index.html` and
+  `.composer` in `app.css`. The status bar's glyphs are **white permanently**,
+  which is wrong on every light page; that is known, not an oversight.
 - **Two faces, and the line between them is a name against a sentence.**
   *Oxygen* for everything you read and everything you press — Light 300 for copy,
   Bold 700 for the caps labels and `.prose strong`. *RipoffSTYLE* for **every

@@ -262,13 +262,20 @@ searchField.addEventListener('keydown', (e) => {
 });
 
 /* ── Swipe back ─────────────────────────────────────────────────────────────
-   The system gesture, done in the page. WKWebView can be told to handle this
-   itself, and it isn't: its gesture drives the webview's own back-forward
-   list, which for a hash-routed app is a list of same-document entries it
-   renders no snapshot for — and if it ever did fire, it would fire alongside
-   the pop this app already does for the back pill, and two mechanisms racing
-   to answer one gesture is worse than either. Doing it here also means it
-   works in a desktop browser, which is where the app is designed.
+   The system gesture, done in the page, so it works the same in a desktop
+   browser — which is where the app is designed — as on the phone.
+
+   ⚠ UNVERIFIED ON DEVICE. This was written against a native build, where the
+   webview's own edge gesture could be and was turned off. A standalone
+   homescreen web app is a different situation: iOS may offer its OWN edge
+   swipe over the history, and every listener below is `passive: true`, so this
+   handler cannot preventDefault its way out of a race. If both fire, one
+   gesture pops twice and you land two screens back instead of one.
+
+   Check it on the phone before trusting it. If it does double-fire, the fix is
+   to notice that a popstate already arrived and skip the goBack() in
+   endSwipe() — not to make the listeners non-passive, which would cost the
+   scroll performance the whole gallery depends on.
 
    What sells it is that the screen tracks the finger. The old version of this
    was a swipe that did nothing until you let go, which reads as a dropped

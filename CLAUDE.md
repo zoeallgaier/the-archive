@@ -1,9 +1,12 @@
 # The Archive
 
-A personal archive — moodboard, artwork, books read, essays, notes — that runs
-as a static web app and as a native iOS app from the same source.
+A personal archive — moodboard, artwork, books read, essays, notes.
 
-No build step. No framework. No bundler. ES modules, three stylesheets, and one
+A static web app, installed to the iPhone homescreen from its URL. **That is
+the only target.** There is no native build, no App Store, no Xcode.
+
+No build step. No framework. No bundler. **No dependencies at all** — there is
+no `package.json` and nothing to install. ES modules, three stylesheets, and one
 JSON index, served straight off disk. `index.html` is the whole entry point.
 
 ---
@@ -59,56 +62,51 @@ There is nothing to build before pushing. What is in the repo is what ships.
 git add -A && git commit -m "…" && git push
 ```
 
-That is the deploy. Pages serves the repo root from `main`. `.nojekyll` is
-present so directories beginning with `_` are not swallowed.
+That is the deploy — the whole of it. Pages serves the repo root from `main`.
+`.nojekyll` is present so directories beginning with `_` are not swallowed.
 
-### The iOS build
+### Getting it onto the phone
 
-```sh
-./ios-sync.sh          # mirrors web assets into www/, then npx cap sync ios
-```
+Safari → the URL → Share → **Add to Home Screen**. Once. After that a push
+reaches the phone on the next launch, because `sw.js` is network-first for the
+app itself.
 
-Then Run in Xcode. `www/` is generated on every sync and gitignored — **never
-edit anything in `www/`**, edit the source and re-run. `sw.js` is deliberately
-not mirrored: the native build already loads every asset off the device.
+If a change appears not to land: the service worker serves the cache only when
+the network fails, so a stale screen means the request failed, not that the
+cache is stuck. Bumping `VERSION` in `sw.js` drops every cached byte and is the
+blunt instrument if one is ever needed.
 
 ---
 
-## Delivery target: homescreen shortcut vs native app
+## The delivery target, and what it cost
 
-**Current answer: the Safari homescreen shortcut is the primary target, and the
-native build stays as a secondary one. But browser storage is scratch until
-export/import exists.**
+**Decided and done: the homescreen web app is the only target.** The native
+Capacitor/iOS build was deleted — `ios/`, `www/`, `capacitor.config.json`,
+`ios-sync.sh`, `package.json`, `package-lock.json`, and the whole dependency
+tree. **Do not reintroduce it**, and do not add a dependency without asking:
+having none is a property of this app, not an accident.
 
-The two builds are the same source and differ only in what is underneath
-`platform.js`. What that difference actually costs:
+The reason was the loop, not the result. Getting a change onto the phone meant
+Xcode, a cable and a signing certificate that expires every seven days on a free
+Apple account. Against `git push` and a relaunch. For an archive whose main
+activity is design iteration, that difference *is* the product.
 
-| | Homescreen shortcut | Native (Capacitor) |
-|---|---|---|
-| Getting a change onto the phone | `git push`, next launch | Xcode, cable, re-sign |
-| Offline | yes, via `sw.js` | yes, assets are on disk |
-| Haptics | **none** | yes |
-| Where data lives | localStorage + IndexedDB | files in the app container |
-| In the iOS device backup | **no** | yes |
-| Can iOS delete it | **yes** | no |
-| Storage ceiling | a WebKit quota | free space |
+### What was given up, honestly
 
-The top row is why the shortcut wins for how this app is actually worked on:
-design iteration is the main activity, and one of these has a thirty-second
-loop while the other has Xcode in it.
+- **Haptics. Permanently.** iOS Safari implements no vibration API —
+  `navigator.vibrate` does not exist in WebKit and there is no fallback. The
+  tree tick and the selection tick are gone. `tick()` and `selectionTick()`
+  survive in `platform.js` as documented no-ops so the *seams* are recorded;
+  see the note there before deleting them.
+- **Durable storage.** Data lives in `localStorage` + IndexedDB. iOS ages out
+  script-writable storage, it is outside the device backup, and "Clear Website
+  Data" takes it. **This is reasoning from documented WebKit behaviour, not a
+  measurement on Zoe's phone** — treat it as a risk to design around, not a
+  fact to quote at her.
 
-The rows in bold are the price. Script-writable storage on iOS is *evictable* —
-WebKit ages it out and reclaims it under pressure. Installed homescreen web apps
-get more latitude than a plain Safari tab, but it is still storage the OS is
-allowed to reclaim, it is not something you can point at in a backup, and
-"Clear Website Data" reaches it. **This has not been tested on Zoe's device and
-is reasoning about documented WebKit behaviour, not a measurement.** Treat it as
-a risk to design around rather than a fact to quote at her.
-
-So the rule until export exists: **the homescreen shortcut is for reading the
-archive and reviewing design. Anything written into it should be assumed
-temporary.** The seeded 289 nodes are safe regardless — they ship in the repo
-and re-download.
+So the rule until export exists: **the archive is safe to read and to review
+design in. Anything written into it should be assumed temporary.** The seeded
+289 nodes are fine regardless — they ship in the repo and re-download.
 
 ### The way out, and it closes two gaps at once
 
@@ -120,12 +118,8 @@ commit on the Mac, push, and the phone has it on next launch. It is the thing
 she already described wanting the GitHub site to be.
 
 That is the highest-value feature left in this app, and it is the precondition
-for the homescreen shortcut being a safe place to author. `platform.js` already
-has `writeDocument()` and `shareFile()` sitting unused for exactly this.
-
-Do not let the native build quietly become the "real" one. It has a signing
-treadmill on a free Apple account and it breaks the review loop that the whole
-workflow above is built on.
+for the archive being a safe place to author. `platform.js` already has
+`writeDocument()` and `readMediaBase64()` sitting unused for exactly this.
 
 ---
 
@@ -133,14 +127,16 @@ workflow above is built on.
 
 ```
 index.html          entry point, the SVG icon sprite, SW registration
-manifest.webmanifest
-sw.js               offline cache for the web build only
+manifest.webmanifest  } together, these are what make the URL installable
+icons/                }
+sw.js               the offline guarantee — nothing else provides one
 css/tokens.css      the entire visual language — every value lives here
 css/base.css        reset, @font-face, the grain layer
 css/app.css         every component
 js/app.js           boot, hash routing, the composer, swipe-back
-js/store.js         the node index, in memory, one JSON file behind it
-js/platform.js      the ONLY file that knows native-vs-browser
+js/store.js         the node index, in memory, one JSON blob behind it
+js/platform.js      storage, camera roll, feedback — the ONLY file that
+                    touches localStorage, IndexedDB or a file input
 js/media.js         image paths → renderable URLs; camera-roll import
 js/ui.js            el(), card(), toast(), confirm(), the shared vocabulary
 js/tree.js          home screen
@@ -173,16 +169,19 @@ rename a prefix to match a name.**
 
 ### Storage, and what "on device" means
 
-| | Native iOS | Browser |
+| what | where | durable? |
 |---|---|---|
-| index | file in app Data dir | `localStorage['archive.index']` |
-| media | files under `Data/media/` | IndexedDB blobs |
+| the index | `localStorage['archive.index']` | no — see above |
+| media you add | IndexedDB blobs, object URLs | no |
+| seeded content | ordinary files under `seed/`, cached by `sw.js` | yes, it's in the repo |
 
-Everything goes through `platform.js`. No other file may touch Capacitor.
+Everything goes through `platform.js`. No other file may reach for a storage
+API directly — that rule is what kept the native build swappable, and it is
+what will keep export/import from spraying across nine files.
 
-**User data never leaves the device it was created on.** The repo ships the
-*seed*; anything added in the app lives only in that browser's storage or that
-phone's app container. See *Sync* below.
+**User data never leaves the browser it was created in.** The repo ships the
+*seed*; anything added in the app is local to that one browser on that one
+device. See *Sync* below.
 
 ### Re-seeding
 
@@ -297,11 +296,17 @@ in localStorage to exercise reconciliation.
 
 Not bugs — things that genuinely do not exist yet.
 
-- **No export/import.** `platform.js` has `writeDocument()` and `shareFile()`
-  and nothing calls them. **This is the next thing to build** — see *Delivery
-  target* above for why it is load-bearing rather than nice to have.
+- **No export/import.** `platform.js` has `writeDocument()` and
+  `readMediaBase64()` and nothing calls them. **This is the next thing to
+  build** — see *The delivery target* above for why it is load-bearing rather
+  than nice to have.
 - **No sync.** Content added on the phone is not on the Mac and vice versa. See
   below.
+- **No haptics, and no way to get them back** on this platform. See
+  *platform.js*.
+- **Swipe-back is unverified on an installed homescreen app** — iOS may run its
+  own edge gesture alongside this one and pop history twice. Flagged in the
+  comment in `app.js`; needs a check on the actual phone.
 - **No way to reorder or retitle images**, or to move one between folders.
 - **Search is text only.** Images carry no words and are not indexed; the wall
   is how you find one. This is deliberate.
@@ -313,11 +318,12 @@ Not bugs — things that genuinely do not exist yet.
 - Everything in `seed/` is committed, so it appears identically on every device
   that opens the site. That is not sync, that is a shipped asset.
 - Anything you add *in the app* — a photo, a note, a book — is written to that
-  browser's `localStorage`/IndexedDB, or to that phone's app container.
+  one browser's `localStorage`/IndexedDB and goes nowhere else.
 - Chrome on the Mac and Safari on the phone are **two separate stores.** So are
-  Safari and Chrome on the same Mac. They will never see each other's content.
-- Clearing site data wipes anything added in the browser. The native app's data
-  is in the iOS backup; the browser's is not.
+  Safari and Chrome on the same Mac, and so is the homescreen app versus a
+  Safari tab pointed at the same URL. None of them will ever see each other's
+  content.
+- Clearing website data wipes all of it, and none of it is in the iOS backup.
 
 To make content real on both devices today, it has to go through `seed/` and be
 committed. Anything else needs a sync backend, which this app deliberately does

@@ -1,12 +1,13 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    SERVICE WORKER — what makes the URL an app rather than a page.
 
-   The native build has never needed this: Capacitor bundles every asset inside
-   the app and the webview loads from disk, which is why base.css can claim the
-   archive "never touches the network and must render identically in airplane
-   mode". Opened from a URL that claim was simply false — a homescreen icon that
-   showed a browser error on the underground, holding a manifest that promised a
-   standalone app.
+   The archive used to ship a native iOS build that bundled every asset on the
+   device, and this file is what took its place. Without it a homescreen icon is
+   a bookmark: it shows a browser error on the underground while holding a
+   manifest that promises a standalone app.
+
+   So this is not an optimisation. It is the offline guarantee the whole
+   delivery model now rests on, and there is no bundled fallback behind it.
 
    ── The two strategies, and which files get which ──────────────────────────
 

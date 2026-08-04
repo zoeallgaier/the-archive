@@ -5,9 +5,10 @@
 
 /* ── Bundled type ───────────────────────────────────────────────────────────
    Oxygen in two weights and two subsets, and nothing else. ~32KB total. Local
-   files rather than a CDN: the app never touches the network and must render
-   identically in airplane mode. Latin-ext carries the accented names and
-   typographic marks the essays actually use.
+   files rather than a CDN: these are precached by sw.js and the archive must
+   render identically in airplane mode, which a third-party font host cannot
+   promise. Latin-ext carries the accented names and typographic marks the
+   essays actually use.
 
    The bold is here for one selector — `.prose strong` — and the guard on
    <body> below stops the browser synthesising one anywhere else. */

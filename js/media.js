@@ -1,10 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   MEDIA — where an image path turns into something the webview can render,
-   and where a photo from the camera roll turns into a stored file.
+   MEDIA — where an image path turns into something the page can render, and
+   where a photo from the camera roll turns into a stored one.
 
    Two origins, one resolver:
-     "media/user/…"  → written by you, lives in app storage
-     anything else   → seeded, lives read-only in the app bundle
+     "media/user/…"  → added by you, a blob in IndexedDB behind an object URL
+     anything else   → seeded, an ordinary file under seed/, cached by sw.js
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { mediaURL, writeMedia } from './platform.js';

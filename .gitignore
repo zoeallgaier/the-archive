@@ -1,8 +1,8 @@
-node_modules/
 .DS_Store
 
-# Capacitor mirrors the web assets into www/ on every sync — generated, never edited.
-www/
+# There is no build step and no dependencies — nothing here should create this.
+# Kept as a guard so a stray `npm i` while poking at a tool can't commit 40MB.
+node_modules/
 
 # Source material the migration reads FROM. The shipped copies live in seed/,
 # already resized, and those ARE committed — seed/ is what the app ships with.
@@ -19,9 +19,3 @@ www/
 /design inspo for claude/
 /art/
 /_source-photos/
-
-# Xcode
-ios/App/Pods/
-ios/App/App/public/
-xcuserdata/
-*.xcuserstate

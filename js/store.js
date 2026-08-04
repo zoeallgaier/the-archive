@@ -68,15 +68,15 @@ export function folderName(path) {
 }
 
 /* ── Boot ───────────────────────────────────────────────────────────────────
-   First launch seeds from the bundled index. Only the INDEX is copied — seed
-   media stays read-only inside the app bundle and is addressed in place;
-   duplicating 37MB into app storage to own a second identical copy would be
-   pure waste.
+   First launch seeds from seed/index.json. Only the INDEX is copied into local
+   storage — seed media stays where it is and is addressed in place, served as
+   ordinary files and held offline by the service worker. Duplicating 51MB into
+   IndexedDB to own a second identical copy would be pure waste.
 
-   After that, the saved index is authoritative — except when the bundled seed
-   changes underneath it. That happens every time the migration is re-run and
-   a new build is installed, and without the reconciliation below the app
-   would keep showing the old content forever with no indication why.
+   After that, the saved index is authoritative — except when the seed changes
+   underneath it. That happens every time the migration is re-run and pushed,
+   and without the reconciliation below the app would keep showing the old
+   content forever with no indication why.
 
    Reconciling has to be conservative in one specific direction: seeded
    content is regenerable and may be replaced freely, but anything you made or

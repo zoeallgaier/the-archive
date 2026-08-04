@@ -1,74 +1,96 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   PLATFORM — the one place that knows whether we're in the app or a browser.
+   PLATFORM — the device, and everything the app is not allowed to touch
+   directly.
 
-   Everything else in the app talks to these functions and never touches
-   Capacitor directly. That's what lets the whole thing run in a desktop
-   browser (`python3 -m http.server`) for fast design iteration, and then run
-   unchanged on the phone with real native storage underneath.
+   Storage, the camera roll, and physical feedback. Four concerns that are the
+   browser's rather than the archive's, behind functions the rest of the app
+   calls without knowing what's underneath. Nothing else in this codebase
+   reaches for localStorage, IndexedDB, or a file input.
+
+   ── This used to be two implementations ────────────────────────────────────
+
+   The archive shipped twice: as this web app, and as a native iOS app with
+   Capacitor underneath it. Every function here forked on a NATIVE flag —
+   Capacitor's Filesystem plugin on the phone, IndexedDB in the browser; the
+   native photo picker on the phone, an <input type="file"> in the browser.
+
+   The native build is gone, and the reason was the loop rather than the
+   result: getting a change onto the phone meant Xcode, a cable and a signing
+   certificate, against a `git push` and a relaunch for this one. For an
+   archive whose main activity is design iteration, that difference is the
+   whole product.
+
+   What went with it is real and worth naming here rather than discovering:
+   HAPTICS. iOS Safari implements no vibration API at all — navigator.vibrate
+   does not exist — so the tick under a folder row is simply not available to a
+   web app on this platform. See below.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-const Cap = window.Capacitor;
+/* ── Feedback ───────────────────────────────────────────────────────────────
+   Both of these are deliberately empty.
 
-export const NATIVE = !!(Cap && Cap.isNativePlatform && Cap.isNativePlatform());
+   The tree tick, the selection tick as a row commits — those were real, they
+   were part of how the app felt, and iOS Safari cannot do them. There is no
+   web equivalent to fall back to: navigator.vibrate is unimplemented in
+   WebKit, and the switch-element trick that gets passed around is a bug being
+   exploited rather than an API.
 
-const plugin = (name) => (Cap && Cap.Plugins ? Cap.Plugins[name] : null);
+   They stay as functions, called from all fifteen places they were called
+   from, because they are the SEAMS where physical feedback belongs. Deleting
+   the calls would scatter the loss across nine files and lose the record of
+   where the app wanted to be felt. One file holds it instead, and if WebKit
+   ever ships vibration these are the two functions that change. */
 
-/* ── Haptics ────────────────────────────────────────────────────────────────
-   The tree tick. Silently absent in the browser, which is correct — there is
-   nothing to fake. */
+export function tick() { /* no haptics on the web — see above */ }
+export function selectionTick() { /* likewise */ }
 
-export function tick(style = 'Light') {
-  if (!NATIVE) return;
-  const h = plugin('Haptics');
-  if (h) h.impact({ style }).catch(() => {});
-}
+/* ── The content index ──────────────────────────────────────────────────────
+   One JSON document under one key. ~290 nodes, a few hundred KB — well inside
+   what localStorage holds, and it is read once at boot and written on change,
+   which is the access pattern localStorage is actually good at.
 
-export function selectionTick() {
-  if (!NATIVE) return;
-  const h = plugin('Haptics');
-  if (h) h.selectionChanged().catch(() => {});
-}
+   THIS IS NOT DURABLE STORAGE and the app should not pretend otherwise. iOS
+   ages out script-writable storage, it is outside the device backup, and
+   "Clear Website Data" takes it. The seeded content survives regardless — it
+   ships in the repo and re-downloads. Anything written here does not, until
+   there is an export. That is the next thing this app needs. */
 
-/* ── Key/value store — the content index ────────────────────────────────────
-   Native: a real file in the app's Data directory, which is what iOS device
-   backup picks up. Browser: localStorage, purely so dev works. */
-
-const INDEX_FILE = 'archive.json';
+const INDEX_KEY = 'archive.index';
 
 export async function readIndex() {
-  if (!NATIVE) {
-    const raw = localStorage.getItem('archive.index');
-    return raw ? JSON.parse(raw) : null;
-  }
-  const fs = plugin('Filesystem');
+  const raw = localStorage.getItem(INDEX_KEY);
+  if (!raw) return null;                 // first launch
   try {
-    const res = await fs.readFile({
-      path: INDEX_FILE, directory: 'DATA', encoding: 'utf8',
-    });
-    return JSON.parse(res.data);
+    return JSON.parse(raw);
   } catch (e) {
-    return null;          // not written yet — first launch
+    // A half-written or corrupted index would otherwise throw at boot and take
+    // the whole app down with it. Re-seeding loses anything added; failing to
+    // start loses that AND the archive.
+    console.error('index unreadable, re-seeding', e);
+    return null;
   }
 }
 
 export async function writeIndex(data) {
-  const json = JSON.stringify(data);
-  if (!NATIVE) {
-    localStorage.setItem('archive.index', json);
-    return;
+  try {
+    localStorage.setItem(INDEX_KEY, JSON.stringify(data));
+  } catch (e) {
+    // Quota, or private browsing. Silence here would mean a save that reports
+    // success and isn't there after a reload.
+    console.error('could not save the index', e);
+    throw e;
   }
-  const fs = plugin('Filesystem');
-  await fs.writeFile({
-    path: INDEX_FILE, directory: 'DATA', data: json,
-    encoding: 'utf8', recursive: true,
-  });
 }
 
 /* ── Binary media ───────────────────────────────────────────────────────────
-   Native: files under Data/media/, addressed through convertFileSrc — a raw
-   file:// URI will not load in the webview, which is the single easiest way
-   to break image display here.
-   Browser: IndexedDB blobs behind object URLs. */
+   Photographs you add, as blobs in IndexedDB behind object URLs. Not
+   localStorage: that is a string store, base64 costs a third again in size,
+   and a few hundred photographs would blow its quota on their own.
+
+   Seeded media is not in here at all. It is served as ordinary files out of
+   seed/ — the service worker caches it, so it is offline either way, and
+   copying 51MB into IndexedDB to own a second identical copy would be waste.
+   See media.js for which path goes where. */
 
 const DB_NAME = 'archive-media';
 let dbPromise = null;
@@ -96,84 +118,60 @@ function idb(mode, fn) {
 
 /** Write a base64 payload. `path` is relative, e.g. "media/user/x.jpg". */
 export async function writeMedia(path, base64) {
-  if (!NATIVE) {
-    const bin = atob(base64);
-    const bytes = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-    await idb('readwrite', (s) => s.put(new Blob([bytes], { type: 'image/jpeg' }), path));
-    return;
-  }
-  const fs = plugin('Filesystem');
-  await fs.writeFile({ path, directory: 'DATA', data: base64, recursive: true });
+  const bin = atob(base64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  await idb('readwrite', (s) => s.put(new Blob([bytes], { type: 'image/jpeg' }), path));
 }
 
-/** A URL the webview can actually render. */
+/** A URL the page can actually render. */
 export async function mediaURL(path) {
-  if (!NATIVE) {
-    const blob = await idb('readonly', (s) => s.get(path));
-    return blob ? URL.createObjectURL(blob) : '';
-  }
-  const fs = plugin('Filesystem');
-  const { uri } = await fs.getUri({ path, directory: 'DATA' });
-  return Cap.convertFileSrc(uri);
+  const blob = await idb('readonly', (s) => s.get(path));
+  return blob ? URL.createObjectURL(blob) : '';
 }
 
 export async function deleteMedia(path) {
-  if (!NATIVE) {
-    await idb('readwrite', (s) => s.delete(path));
-    return;
-  }
-  const fs = plugin('Filesystem');
-  try {
-    await fs.deleteFile({ path, directory: 'DATA' });
-  } catch (e) { /* already gone */ }
+  await idb('readwrite', (s) => s.delete(path));
 }
 
 export async function readMediaBase64(path) {
-  if (!NATIVE) {
-    const blob = await idb('readonly', (s) => s.get(path));
-    if (!blob) return null;
-    return new Promise((resolve) => {
-      const r = new FileReader();
-      r.onload = () => resolve(String(r.result).split(',')[1]);
-      r.readAsDataURL(blob);
-    });
-  }
-  const fs = plugin('Filesystem');
-  try {
-    const res = await fs.readFile({ path, directory: 'DATA' });
-    return res.data;
-  } catch (e) {
-    return null;
-  }
+  const blob = await idb('readonly', (s) => s.get(path));
+  if (!blob) return null;
+  return new Promise((resolve) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result).split(',')[1]);
+    r.readAsDataURL(blob);
+  });
 }
 
 /* ── Camera roll ────────────────────────────────────────────────────────────
-   The native multi-picker on device; a plain file input in the browser. Both
-   resolve to the same shape: a list of data URLs. */
+   A file input, which on iOS opens the system photo picker and hands back real
+   files — so multi-select and the camera are both there without a plugin.
+
+   Resolves to a list of data URLs, which is what media.importImage takes.
+   Everything is re-encoded to JPEG on the way in anyway (see media.js), so a
+   HEIC straight off an iPhone is handled downstream rather than here. */
 
 export async function pickImages(limit = 12) {
-  if (NATIVE) {
-    const cam = plugin('Camera');
-    const res = await cam.pickImages({ quality: 90, limit });
-    const out = [];
-    for (const p of res.photos || []) {
-      const blob = await fetch(p.webPath).then((r) => r.blob());
-      out.push(await blobToDataURL(blob));
-    }
-    return out;
-  }
-
   return new Promise((resolve) => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
     input.multiple = limit > 1;
+
     input.onchange = async () => {
-      const files = Array.from(input.files || []);
+      const files = Array.from(input.files || []).slice(0, limit);
       resolve(await Promise.all(files.map(blobToDataURL)));
     };
+
+    /* Not every engine fires `cancel`, and a picker dismissed without one would
+       leave this promise pending forever — with the caller's "Saving…" toast
+       still up. Whichever arrives first wins; a second resolve is a no-op. */
     input.oncancel = () => resolve([]);
+    window.addEventListener('focus', () => {
+      setTimeout(() => { if (!input.files?.length) resolve([]); }, 400);
+    }, { once: true });
+
     input.click();
   });
 }
@@ -186,30 +184,19 @@ function blobToDataURL(blob) {
   });
 }
 
-/* ── Share sheet — used by Export ───────────────────────────────────────── */
+/* ── Getting things out ─────────────────────────────────────────────────────
+   A download, which is the only export a web app has. Nothing calls this yet
+   and it is the seam the archive's backup story hangs off: an export shaped
+   like seed/ is something you commit to the repo, which makes the repo the
+   backup and the sync path at once. See CLAUDE.md. */
 
-export async function shareFile(uriOrBlobName, title) {
-  if (!NATIVE) return false;
-  const sh = plugin('Share');
-  if (!sh) return false;
-  await sh.share({ title, url: uriOrBlobName });
-  return true;
-}
-
-/** Write a file to Documents (visible in the Files app) and hand back its URI. */
-export async function writeDocument(path, data, encoding) {
-  if (!NATIVE) {
-    const blob = new Blob([data], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = path.split('/').pop();
-    a.click();
-    return null;
-  }
-  const fs = plugin('Filesystem');
-  const opts = { path, directory: 'DOCUMENTS', data, recursive: true };
-  if (encoding) opts.encoding = encoding;
-  await fs.writeFile(opts);
-  const { uri } = await fs.getUri({ path, directory: 'DOCUMENTS' });
-  return uri;
+export async function writeDocument(name, data, type = 'application/json') {
+  const blob = data instanceof Blob ? data : new Blob([data], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name.split('/').pop();
+  a.click();
+  // Revoked on a delay: revoking synchronously can beat the download starting.
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }

@@ -11,19 +11,24 @@
 <title>Archive</title>
 
 <!-- ═══ homescreen ══════════════════════════════════════════════════════════
-     What turns the URL into an app. Safari reads the apple-* metas; the
-     manifest is what macOS Safari's "Add to Dock" and every other browser
-     read. Both are here because the archive is opened from a phone homescreen
-     and a Mac dock, and neither format covers both.
+     What turns the URL into an app, and it is now the ONLY thing that does.
+     The archive shipped as a native iOS build for a while; this block is what
+     replaced it. Everything here is load-bearing — nothing below is legacy or
+     belt-and-braces.
 
-     STATUS BAR STYLE IS `default`, NOT `black-translucent`, and that's a
-     deliberate loss. Translucent is what the native build gets: content runs
-     full-bleed under the clock, which is what env(safe-area-inset-top) in
-     app.css is paying for. But it also forces the status bar's text WHITE
-     permanently — and this app has a real light theme with a white ground, so
-     in daylight the clock and the battery would be white on white. `default`
-     hands the status bar to the theme-color metas above, which are already
-     declared per colour-scheme, so it stays legible in both. -->
+     Safari reads the apple-* metas. The manifest is what macOS Safari's "Add
+     to Dock" and every other browser read. Both are here because the archive
+     is opened from a phone homescreen and a Mac dock, and neither format
+     covers both.
+
+     STATUS BAR STYLE IS `default`, NOT `black-translucent`. Translucent buys
+     full-bleed content running under the clock — which is what
+     env(safe-area-inset-top) in app.css is paying for — but it also forces the
+     status bar's text WHITE permanently, and this app has a real light theme
+     with a white ground. In daylight the clock and the battery would be white
+     on white. `default` hands the status bar to the theme-color metas above,
+     which are already declared per colour-scheme, so it stays legible in both.
+     Two themes that both work beats one theme that runs 20px taller. -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -235,11 +240,13 @@
 
 <script type="module" src="js/app.js"></script>
 
-<!-- The offline copy, and only where there is a network to be offline from.
-     The native build serves every one of these files off the device already —
-     registering a worker inside Capacitor's own scheme would be a second
-     caching layer over a filesystem read, which can only ever be slower and
-     staler. See sw.js. -->
+<!-- The offline copy. This is what makes the homescreen icon an app rather than
+     a bookmark that fails on the underground — there is no bundled build to
+     fall back on any more, so sw.js is the only reason the archive opens
+     without a network. See sw.js for which files are cached which way.
+
+     Guarded on http(s) so that opening index.html straight off disk — a
+     file:// URL, which throws on register() — still works for a quick look. -->
 <script>
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
     addEventListener('load', () => {

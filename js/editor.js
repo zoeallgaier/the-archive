@@ -2,10 +2,11 @@
    EDITOR — writing.
 
    Full screen, no header. This is a LIVE editor: the body is the reader's own
-   `.prose` block, made editable. A heading is 26px the moment you make it, a
-   quote grows its rule as you type into it, a dash becomes a bullet under the
-   caret, and bold is bold. There is no preview mode because there is nothing
-   left to preview — the page you are writing on is the page.
+   `.prose` block, made editable. A heading is 20px and bold the moment you
+   make it, a quote grows its rule as you type into it, a dash becomes a
+   bullet under the caret, and bold is bold. There is no preview mode because
+   there is nothing left to preview — the page you are writing on is the
+   page.
 
    It is also where a grocery list lives, which is why there are checkboxes in
    an essay editor. A note and an essay are the same object here; the only
@@ -324,9 +325,9 @@ const isEmpty = (host) =>
 
 /* Each mark shows what it makes rather than what it's called. Four of the six
    are a letter set in their own style — the B is the bold face, the H is the
-   step up in size an <h2> is, the “ is that mark at the size it lands — and
-   the two that change the SHAPE of a paragraph rather than the look of a word
-   are drawn instead.
+   step up in size AND weight an <h2> now is, the “ is that mark at the size
+   it lands — and the two that change the SHAPE of a paragraph rather than the
+   look of a word are drawn instead.
    See the sprite in index.html.
 
    `label` survives as the aria-label: a glyph is a picture to anything that

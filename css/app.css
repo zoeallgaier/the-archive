@@ -54,16 +54,20 @@
    the app has one home screen and you are looking at it, so a wordmark could
    only tell you what you already know.
 
-     folder   60px Ripoff Normal, full ink
+     folder   34px Oxygen Bold, full ink — iOS Large Title, see tokens.css
      count    11px Oxygen Bold caps, 38% ink, hard right
      leaf     15px Oxygen Light, 62% ink
      sub      11px Oxygen Bold caps, 20% ink
 
-   The folder row is FOUR TIMES the size of the leaves under it, and it is the
-   only thing on the screen set in the display face. It was twice the size, in
-   the body face, which made the home screen a list with big headings; at this
-   distance and in Ripoff the five words ARE the screen and everything else on
-   it is annotation. See the doctrine at the top of tokens.css.
+   The folder row is better than two times the size of the leaves under it. It
+   was FOUR times that size before the tree's own size token followed iOS's
+   own scale down from a poster-sized 68 to Large Title's 34 — and merged into
+   --t-display once it landed there, since a page's own title had arrived at
+   the same 34 by then too. It briefly drew itself as a hollow outline rather
+   than a fill in between — both the size and the outline were poster
+   devices, and both left with the poster. Still the loudest thing on the
+   screen by size and weight; just plain type now, carrying the row on those
+   two alone. See the doctrine at the top of tokens.css.
 
    NOTHING BUT WORDS. Each row used to carry its folder's mark in a gutter to
    the left — the same drawing the ＋ spends for that folder — and the drawings
@@ -118,32 +122,21 @@
 .folder__name {
   flex: 1;
   min-width: 0;
-  font-size: var(--t-folder);
-  /* THE ONE PLACE THE ARCHIVE SHOUTS, AND IT SHOUTS IN OUTLINE. Ripoff Normal
-     — the heavy weight of the display face — drawn rather than filled: no ink
-     inside the letters at all, just the edge of them at --stroke-title.
-
-     This is the home screen giving up the one thing it had over every other
-     screen. It was 60px of solid ink and it was, by a wide margin, the
-     heaviest object in the app; the page title it opens is now the heaviest
-     object in the app instead. Which means the two never compete, because
-     they are never on screen together: the tree is the outline of five words
-     and the page behind each one is a solid block of type. Opening a folder
-     is the archive filling in.
-
-     -webkit-text-stroke IS THE ONLY WAY TO DO THIS and it is not a fallback.
-     The standard `paint-order` + stroke properties for text are SVG-only in
-     WebKit, and the alternative — a duplicated ::before in the page colour
-     behind a filled word — is two copies of every folder name in the DOM for
-     one visual effect. The prefix is permanent, universally supported, and
-     draws the stroke CENTRED on the glyph outline, which is why the weight in
-     tokens.css is tuned against the counters rather than picked. */
-  font-family: var(--font-title);
-  font-weight: var(--w-title-bold);
+  font-size: var(--t-display);
+  /* SOLID INK, NOT AN OUTLINE ANY MORE. The five words were drawn as a hollow
+     stroke for a while — color: transparent, -webkit-text-stroke for the
+     edge — and it only paid for itself at a poster size: a stroke let a 68px
+     folder word share a scale with an equally large, equally heavy page
+     title without the two ever reading as the same object, because they were
+     never both on screen at once and one was hollow. Once the whole scale
+     followed iOS's own sizes down to 34px, the poster was already gone —
+     Zoe's call was that a stroke with nothing left to distinguish itself from
+     was just a fussier way to draw plain type. Full ink now, like every other
+     BOLD word in the app. */
+  font-weight: var(--w-bold);
   letter-spacing: var(--track-tight);
   line-height: var(--leading-display);
-  color: transparent;
-  -webkit-text-stroke: var(--stroke-title) var(--ink);
+  color: var(--ink);
 }
 
 .folder__count {
@@ -265,55 +258,39 @@
   padding: calc(var(--stack-lg) * 1.6) var(--page-x) var(--stack-lg);
 }
 
-/* The same word as on the home screen that opened it, twelve points larger and
-   three hundred units lighter — the same face, its other weight. That is the
-   whole relationship between the contents page and a page: one is the other's
-   title, and it arrives quieter than the word you tapped, because you are
-   about to read underneath it rather than choose from it. */
-/* JUSTIFIED TO BOTH EDGES, LAST LINE INCLUDED, ON THE TIGHTEST LEADING THE
-   face will take. This is the one thing in the archive that is set as a BLOCK
-   rather than as lines of type: every line runs margin to margin, they sit
-   0.04em clear of each other, and a three-word essay title arrives as a solid
-   rectangle with the words holding its corners apart.
-
-   `text-align-last` is the whole trick and it is why plain `justify` was not
-   enough — the last line of a justified paragraph is normally left alone, and
-   a title is USUALLY ONLY ITS LAST LINE. Without it, justify does nothing to
-   ninety per cent of the titles in this archive.
-
-   WHAT IT CANNOT DO: stretch a title that is one word. There are no spaces in
-   "Apathy" for the engine to open up, and CSS has no reliable way to justify
-   between letters instead — `text-justify: inter-character` is not implemented
-   in WebKit. A one-word title sets flush left at its natural width, and that
-   is the honest failure: it looks like a title rather than like a bug. */
+/* The same word as on the home screen that opened it, at the same weight and
+   the same size — Bold Oxygen, 34px, both times. That is the whole
+   relationship between the contents page and a page: one is the other's
+   title, arrived at rather than merely tapped. */
 .head__title {
-  font-family: var(--font-title);
   font-size: var(--t-display);
-  /* NORMAL, NOT THIN, AND AT 90px. Both moved at once and for one reason: the
-     tree words above went hollow, so the solid weight of the display face was
-     free and the title of the thing you actually opened is where it belongs.
-     A page now reads as one enormous justified block of type with the copy
-     beginning underneath it, which at --leading-block is a rectangle rather
-     than a heading. See the two notes in tokens.css. */
-  font-weight: var(--w-title-bold);
+  /* BOLD, AND AT 34px — iOS's own Large Title, down from a poster-sized 68.
+     The weight and the size didn't move together for the same reason,
+     though: BOLD moved when the tree went hollow, so the solid weight was
+     free and the title of the thing you actually opened is where it
+     belongs. 68 → 34 moved later and separately, when the whole scale
+     followed iOS's own sizes down.
+
+     THIS USED TO BE JUSTIFIED TO BOTH EDGES, `text-align-last` included, so a
+     multi-word title arrived as a solid rectangle with every line running
+     margin to margin. That was a poster device like the size and the tree's
+     outline were, and it left with them — Zoe's call, once the title was
+     iOS-sized rather than page-filling, was that forcing every line flush to
+     both edges was doing more work than a title at this size needed. Left-
+     aligned now, the plain default, on the same tight --leading-block a
+     multi-line title still wants regardless of alignment. See the notes in
+     tokens.css. */
+  font-weight: var(--w-bold);
   letter-spacing: var(--track-tight);
   line-height: var(--leading-block);
-  text-align: justify;
-  text-align-last: justify;
 }
 
-/* The editor's title placeholder. It hangs off .is-empty, which stretches edge
-   to edge to inherit its host's alignment — and inheriting THIS one would
-   spread the word "Title" across the whole phone with the caret parked at the
-   far left of it. A placeholder is not a title; it goes back to flush left and
-   the block starts the moment there is something to set. */
-.editor__title.is-empty::before { text-align-last: left; }
-
 /* One line under the title, and every screen puts something different in it: a
-   date, or a count of pieces. Oxygen Bold caps at 11px hard under 72px of the
-   display face — the two faces, one over the other, which is the same pairing
-   the tree makes with a folder word and its count. The editor puts the marks
-   in the same slot but not in this style — see .marks, which is its own row. */
+   date, or a count of pieces. Oxygen Bold caps at 11px hard under 34px of
+   Oxygen Bold at display size — small under large, weight matching weight,
+   which is the same pairing the tree makes with a folder word and its count.
+   The editor puts the marks in the same slot but not in this style — see
+   .marks, which is its own row. */
 .head__meta {
   margin-top: var(--gutter);
   font-size: var(--t-micro);
@@ -371,23 +348,22 @@
 .prose > * + * { margin-top: var(--stack-lg); }
 
 /* A heading inside an essay is a title of a smaller thing, so it is the title
-   size a step down — the third and last of them. It sits at full ink against
-   the --ink-prose of the copy, which is what separates it without reaching for
-   a face or a weight the chrome doesn't own. */
-/* The third and smallest of the title sizes, and it is the same face and the
-   same weight as the head above it — a heading inside an essay is the head of
-   a smaller thing, so it is the same voice a size down. It is also the one
-   place the display face lands in the middle of running Oxygen, which is what
-   makes a section break visible without a rule across the page.
+   size a step down — the third and last of them. It used to be QUIET rather
+   than loud: Light, the same weight as the copy around it, on the theory that
+   a section break should read as calm rather than shouted. Zoe changed that —
+   a heading is still a title, and every other title in the app is BOLD, so
+   this one is too now, full ink against the --ink-prose of the copy same as
+   before, plus the weight the two titles above it already had. The size is
+   still what carries the argument, the way it always did; it just no longer
+   argues alone.
 
    --leading-tight, not --leading-display: the display leading is under 1 and
    is drawn for a title of three or four words meant to read as one block. A
    heading inside an essay is a sentence and it wraps like one. */
 .prose h2 {
   margin-top: calc(var(--stack-lg) * 1.6);
-  font-family: var(--font-title);
   font-size: var(--t-title);
-  font-weight: var(--w-title);
+  font-weight: var(--w-bold);
   letter-spacing: var(--track-tight);
   line-height: var(--leading-tight);
   color: var(--ink);
@@ -548,8 +524,11 @@
 /* A contenteditable is never :empty — the browser keeps a <br> in it so the
    caret has somewhere to sit — so emptiness is a class the editor sets, not a
    selector the CSS can find on its own. Stretched edge to edge rather than
-   pinned left, so it inherits whatever text-align its host has: the title's
-   placeholder centres itself and the body's doesn't. */
+   pinned left, so it inherits whatever text-align its host has — which, now
+   that .head__title no longer forces justify, is plain left for both the
+   title's placeholder and the body's. There used to be a rule right here
+   pinning the title placeholder back to left against an inherited justify;
+   it's gone along with the justify it existed to undo. */
 .is-empty::before {
   content: attr(data-placeholder);
   position: absolute;
@@ -639,7 +618,8 @@
 
 /* The letters. Each one is the thing it makes, which is why none of them is
    allowed to be normalised into a uniform row: the B is heavier than the I on
-   purpose, and the H is a different face.
+   purpose, and the H is bigger — see .marks__glyph--heading below for why it
+   no longer also changes face to make that point.
 
    Set at reading size — this is the size the mark will be applied AT, and a
    sample of body type shrunk to a label's size stops being a sample. */
@@ -649,7 +629,7 @@
 }
 
 /* The two drawn marks, a touch above the app's 16px icon: they stand beside
-   18px letters here rather than alone in a button. */
+   17px letters here rather than alone in a button. */
 .marks .ic {
   width: calc(var(--u) * 5);
   height: calc(var(--u) * 5);
@@ -657,14 +637,15 @@
 .marks__glyph--bold   { font-weight: var(--w-bold); }
 .marks__glyph--italic { font-style: italic; }
 
-/* EVERY MARK IS AN EXAMPLE OF ITSELF, and this one finally can be. A heading
-   in this app is a step up in size AND a change of face — .prose h2 is Ripoff
-   — so the H is set in Ripoff at the size the row can hold. It used to be an
-   Oxygen H made larger, which was an example of the old rule and stopped being
-   true the moment the titles changed face. */
+/* EVERY MARK IS AN EXAMPLE OF ITSELF. A heading in this app is BOLD now, same
+   as .prose h2 — see the note there for why that changed — so the H matches:
+   bigger, at the size the row can hold, and heavier, same as every other
+   heading in the app. It was briefly a change of face too, for as long as
+   .prose h2 was set in Ripoff, and briefly Light after that, for as long as
+   .prose h2 was; this mark has tracked .prose h2's weight both times rather
+   than picking one of its own. */
 .marks__glyph--heading {
-  font-family: var(--font-title);
-  font-weight: var(--w-title);
+  font-weight: var(--w-bold);
   font-size: calc(var(--u) * 5.5);
 }
 

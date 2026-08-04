@@ -235,30 +235,42 @@ before changing anything visual. In short:
   the scrim — is those two colours through the step table in `tokens.css`. That
   is why recolouring the app cannot change its grammar. **Do not add a colour
   anywhere else.**
-- **The tree is outlined, the page it opens is solid.** The home screen's five
-  words are `-webkit-text-stroke` at `--stroke-title` with a transparent fill —
-  no ink inside the letters. The page title behind each one is Ripoff Normal,
-  filled, at `--t-display`. So the heaviest object in the app is never on screen
-  twice, and opening a folder reads as the archive filling in. Changing either
-  one without the other puts them back in competition.
+- **The tree and the page it opens are both solid ink now.** The home screen's
+  five words used to be drawn as a hollow `-webkit-text-stroke` outline against
+  the page title's solid fill — a poster-scale device that told the two apart
+  even at the same size and weight. It left when the titles did: once the
+  whole scale followed iOS down to a 34px Large Title, there was no poster left
+  for an outline to earn its keep against, so both are plain filled Bold Oxygen
+  now. See the doctrine at the top of `tokens.css` for the fuller history.
 - **Nothing is inset from the top or bottom edge of the glass.** The status bar
   is `black-translucent` and the composer sits one gutter off the true bottom,
   with no `env(safe-area-inset-bottom)` anywhere. Both cost something and both
   costs are written down at the sites — see the meta block in `index.html` and
   `.composer` in `app.css`. The status bar's glyphs are **white permanently**,
   which is wrong on every light page; that is known, not an oversight.
-- **Two faces, and the line between them is a name against a sentence.**
-  *Oxygen* for everything you read and everything you press — Light 300 for copy,
-  Bold 700 for the caps labels and `.prose strong`. *RipoffSTYLE* for **every
-  title and nothing else**, in two weights: Normal for the home screen's five
-  words, Thin for a page's own title and the headings inside it. So the archive
-  gets quieter the further in you go.
-- **The type scale is deliberately broken.** 11 / 13 / 15 / 17 for everything
-  functional and for the reading copy, then a canyon, then 30 / 56 / 60 for the
-  three sizes of title. Nothing in the twenties, on purpose. A page's title is
-  justified to both edges with `text-align-last` and set on `--leading-block`
-  (0.80), which is a floor Ripoff can hit only because it has no descender —
-  see the note in `tokens.css` before lowering it.
+- **One face now, not two.** Oxygen carries everything — reading copy, buttons,
+  and every title. A second face, *RipoffSTYLE*, used to set every title and
+  nothing else; it has been pulled out of the app entirely, fonts and all, not
+  swapped for something else. What it used to signal — "a title is a different
+  kind of word" — is said now with size, weight and treatment instead: Light
+  300 for copy and the quiet titles (the headings inside an essay), Bold 700
+  for caps labels, `.prose strong`, and the loud titles (the home screen's
+  five words and the page title each one opens onto, both set solid). So the
+  archive still gets quieter the further in you go — one face doing what two
+  used to.
+- **The type scale follows iOS's own sizes now.** It used to be a deliberately
+  broken scale of its own — two clusters and a canyon, nothing in the twenties
+  on purpose. Zoe asked for iOS's default sizes across the app instead: 11 / 13
+  / 15 / 17 are Apple's Caption 2 / Footnote / Subheadline / Body, for
+  everything functional and the reading copy; 20 / 34 / 34 are Title 3 and
+  Large Title (twice), for the three sizes of title — down from 30 / 68 / 68.
+  A page's title used to be justified to both edges with `text-align-last`,
+  turning a multi-word title into a solid rectangle; it's left-aligned now,
+  the plain default, but still set on `--leading-block` (1.05, not 0.80 —
+  that number only worked that tight because Ripoff has no descender, and
+  Oxygen does; at 0.80 a wrapped title with a g, y, p, q or j in it would
+  print through the line below it). See the note in `tokens.css` before
+  changing either number again.
 - **Every spatial value is a multiple of `--u` (4px).** No magic numbers, and no
   raw values outside `tokens.css`.
 - **Two shapes:** a rounded pill with a sharp 1px outline filled with the page,

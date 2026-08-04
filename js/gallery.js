@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   GALLERY — The Vibe, the artwork, and the lightbox they share.
+   GALLERY — Vision board, the artwork, and the lightbox they share.
 
    The packing is done by CSS columns, not JavaScript. There's nothing to
    recompute on rotate, nothing to desync from the DOM, and no measure pass on
@@ -21,7 +21,7 @@ import { el, body, head, empty, toast, confirm } from './ui.js';
 import { tick } from './platform.js';
 import { borrowComposer } from './app.js';
 
-/* ── The Vibe ───────────────────────────────────────────────────────────── */
+/* ── Vision board ───────────────────────────────────────────────────────── */
 
 export function renderBoard(nav) {
   const images = store.children('moodboard/');

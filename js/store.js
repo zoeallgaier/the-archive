@@ -16,19 +16,21 @@ import { readIndex, writeIndex, deleteMedia } from './platform.js';
 let nodes = [];
 let loaded = false;
 
-/* The five top-level folders, in the order they appear on the home screen:
-   images, then the work, then what was read, then the finished writing, then
-   the unfinished kind. Loosest to tightest — the archive opens on the thing
-   you look at without reading and ends on the thing nobody has read yet.
+/* The five top-level folders, in the order they appear on the home screen: the
+   unfinished writing first, then what was finished, then what was read, then
+   the work, then the images. Tightest to loosest — the archive opens on the
+   thing nobody has read yet and ends on the thing you look at without
+   reading. (It ran the other direction once; Zoe flipped it.)
 
    `name` is the display word and `prefix` is the path, and they are allowed to
    disagree. A path is an identifier: it was written into 289 nodes at
    migration and renaming one would mean rewriting every one of them plus every
    route that points at them. A name is a label on a screen. So the folder
    whose contents live under `works/` is called Artwork, `marginalia/` is
-   called Essays, `braindumps/` is called Notes, and nothing on disk moved for
-   any of it — which is the point of the split. Three of the five names have
-   been changed since migration and no node has ever been rewritten for one.
+   called Essays, `braindumps/` is called Notes, and `moodboard/` is called
+   Vision board — nothing on disk moved for any of it, which is the point of
+   the split. It was called The Vibe until Zoe renamed it; the path is still
+   `moodboard/` regardless, same as the other three renames.
 
    `mode` is how the row behaves. Most folders expand in place, which is the
    point of a file tree. The Vibe opens instead: 200-odd filenames is not
@@ -54,11 +56,11 @@ let loaded = false;
    are lists of names now, and a row that has `name` doesn't need a picture of
    it — the five drawings went out of index.html with the field. */
 export const FOLDERS = [
-  { name: 'The Vibe', prefix: 'moodboard/',  mode: 'open',   route: '#/moodboard', add: 'photos' },
-  { name: 'Artwork',  prefix: 'works/',      mode: 'expand', treat: 'work',  add: 'pieces' },
-  { name: 'Library',  prefix: 'reads/',      mode: 'expand', treat: 'read',  add: 'book'   },
-  { name: 'Essays',   prefix: 'marginalia/', mode: 'expand', treat: 'essay', add: 'write'  },
-  { name: 'Notes',    prefix: 'braindumps/', mode: 'expand', treat: 'essay', add: 'write'  },
+  { name: 'Notes',        prefix: 'braindumps/', mode: 'expand', treat: 'essay', add: 'write'  },
+  { name: 'Essays',       prefix: 'marginalia/', mode: 'expand', treat: 'essay', add: 'write'  },
+  { name: 'Library',      prefix: 'reads/',      mode: 'expand', treat: 'read',  add: 'book'   },
+  { name: 'Artwork',      prefix: 'works/',      mode: 'expand', treat: 'work',  add: 'pieces' },
+  { name: 'Vision board', prefix: 'moodboard/',  mode: 'open',   route: '#/moodboard', add: 'photos' },
 ];
 
 /** The display word for a path's folder, e.g. "reads/behave" -> "Library". */

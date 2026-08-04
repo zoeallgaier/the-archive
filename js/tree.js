@@ -22,10 +22,11 @@
    So the words now start on --page-x, the same left edge as the type on every
    other screen in the app.
 
-   The five words are the archive's own order, loosest to tightest: the things
-   you look at without reading, then the work, then what you read, then what
-   you finished writing, then what you didn't. See FOLDERS in store.js — the
-   words on screen and the folders on disk are deliberately different things.
+   The five words are the archive's own order, tightest to loosest: what you
+   didn't finish writing, then what you did, then what you read, then the
+   work, then the things you look at without reading. See FOLDERS in
+   store.js — the words on screen and the folders on disk are deliberately
+   different things.
 
    Each folder and its children are wrapped in one <section.branch>, so the
    hairline between branches is a border on a single element rather than

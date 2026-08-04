@@ -73,8 +73,6 @@ const SHELL = [
   'fonts/oxygen-300-ext.woff2',
   'fonts/oxygen-700.woff2',
   'fonts/oxygen-700-ext.woff2',
-  'fonts/ripoff-thin.woff2',
-  'fonts/ripoff-normal.woff2',
   'seed/index.json',
 ];
 

@@ -4,39 +4,23 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ── Bundled type ───────────────────────────────────────────────────────────
-   TWO FACES, and the line between them is the line between a NAME and a
-   SENTENCE.
+   ONE FACE. Oxygen carries everything in the archive — everything you read,
+   everything you press, and every title. Light 300 for copy, rows, and now
+   the quieter half of what titles used to split with a second face; Bold 700
+   for the caps labels, `.prose strong`, and the loudest titles — the home
+   screen's five words and a page's own head. ~32KB, two subsets each.
 
-     OXYGEN        everything you read and everything you press. Light 300 for
-                   copy and rows, Bold 700 for the caps labels and for
-                   `.prose strong`. ~32KB, two subsets each.
+   THIS USED TO BE TWO FACES. RipoffSTYLE, a display face from 2001, set every
+   title and nothing else, on the argument that a title is a different KIND of
+   word and not a bigger version of the one underneath it. That argument is
+   gone from the app now, not answered — Zoe pulled the second face out
+   entirely, so the line it used to draw (a title is set differently) is drawn
+   with size and weight alone, the way the rest of the scale already works.
+   The doctrine comment at the top of tokens.css is the fuller history if a
+   future change needs to know what was traded away.
 
-     RIPOFFSTYLE   every title in the archive, and nothing else. Normal for the
-     (2001)        five words of the home screen, Thin for the head of a page
-                   and the headings inside one. ~9KB for both, unsubset,
-                   because the whole font is 250 glyphs.
-
-   Ripoff was here once before, for the tree alone, and this puts it back with
-   a bigger job. The argument is the same one and it got stronger as the titles
-   got larger: a title is not a bigger version of the words underneath it, it
-   is a different KIND of word, and at 60 and 72px setting it in the body face
-   just makes the body face very big. The display face is what stops the
-   contents page from being a list with large rows.
-
-   IT IS EFFECTIVELY UNICASE. Ripoff has distinct glyphs for upper and lower
-   case and they are drawn identically — "Moodboard" comes out reading as
-   caps whatever you type. That is a property of the face, not a
-   text-transform, so the DOM still holds the words the way they were written
-   and search still matches them.
-
-   ASCII AND A LITTLE MORE. Ripoff carries Latin-1 and no further; anything
-   outside its coverage falls through to Oxygen rather than to a system face,
-   which is what the fallback in --font-title is for. Five folder names will
-   never need more, and an essay title with a Polish name in it degrades to one
-   word in the body face rather than to Helvetica.
-
-   Local files rather than a CDN, all four of them: these are precached by
-   sw.js and the archive must render identically in airplane mode, which a
+   Local files rather than a CDN, both of them: these are precached by sw.js
+   and the archive must render identically in airplane mode, which a
    third-party font host cannot promise. Latin-ext carries the accented names
    and typographic marks the essays actually use. */
 
@@ -66,23 +50,6 @@
   src: url('../fonts/oxygen-700-ext.woff2') format('woff2');
   unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB,
                  U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-
-/* The display face, in the two weights the family has. They are mapped to 400
-   and 700 rather than to their own names so that a title can ask for "the
-   heavier one" in the ordinary way, and so `font-weight` still means what it
-   means everywhere else in the app.
-
-   `block` on both: a title is the largest thing on its screen, and a swap of
-   the five words of the home screen from Oxygen to Ripoff a beat after they
-   land is the whole layout moving under your eyes. Ripoff is 4.7KB. */
-@font-face {
-  font-family: 'Ripoff'; font-style: normal; font-weight: 400; font-display: block;
-  src: url('../fonts/ripoff-thin.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'Ripoff'; font-style: normal; font-weight: 700; font-display: block;
-  src: url('../fonts/ripoff-normal.woff2') format('woff2');
 }
 
 /* ── Reset ──────────────────────────────────────────────────────────────── */
@@ -138,11 +105,12 @@ body {
   overscroll-behavior: none;
 }
 
-/* The browser sets font-weight:bold on headings, <strong>, <b> and <th>. A
-   heading is NOT one of the places this app spends bold — a title's whole
-   argument is scale, and the biggest words in the archive are the thinnest
-   ones. Bold is claimed deliberately, by the caps labels and by `.prose
-   strong`, and is never inherited into a title by accident. */
+/* The browser sets font-weight:bold on headings, <strong>, <b> and <th>. This
+   resets that to a neutral baseline so nothing gets bold by accident of tag
+   name — every place that wants it now claims it deliberately instead: the
+   caps labels, `.prose strong`, and `.prose h2`, which used to be the one
+   heading in the app that stayed Light on purpose and no longer is. See the
+   note at .prose h2 in app.css for why that changed. */
 h1, h2, h3, h4, h5, h6, b, strong, th { font-weight: var(--w); }
 
 img { display: block; max-width: 100%; border-style: none; }

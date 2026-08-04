@@ -7,39 +7,50 @@
 
    Four rules hold the whole thing up:
 
-     1. TWO FACES, AND THE LINE BETWEEN THEM IS THE LINE BETWEEN A NAME AND A
-        SENTENCE. Oxygen carries everything you read and everything you press.
-        RipoffSTYLE — a display face from 2001 — sets every title in the
-        archive and nothing else.
+     1. ONE FACE. Oxygen carries everything in the archive — everything you
+        read, everything you press, and every title. It did not always: a
+        second face, RipoffSTYLE, used to set every title and nothing else, on
+        the theory that a title is a different KIND of word and not a bigger
+        version of the one underneath it. Zoe pulled it out entirely rather
+        than answer that argument, so the line a second face used to draw is
+        drawn now by the tools a single face still has — size and weight: the
+        tree's five words and a page's own title are both set solid and BOLD,
+        off the one shared token, --t-display (rule 3 below) — and both stand
+        apart from the row of functional text the same way they always did.
+        They briefly stood apart from EACH OTHER too, the tree drawn as a
+        hollow outline against the page's solid fill — a poster-scale device
+        that stopped paying for itself the moment the sizes themselves went
+        from poster (68px) to iOS's own Large Title (34px, rule 3 below).
+        Plain filled type, same as everywhere else BOLD appears, is what's
+        left doing that job now.
 
-        It is not decoration and it is not a second voice for its own sake. A
-        title is not a bigger version of the words underneath it, and at the
-        sizes below, setting one in the body face just makes the body face very
-        big. Ripoff is what stops the contents page from reading as a list with
-        large rows. It was here before for the tree alone; the argument only
-        got stronger as the titles got larger.
-
-        Each face is set in two weights, and both pairs mean the same thing.
-        Oxygen: Light 300 for copy, Bold 700 for the caps labels and for
-        `<strong>` — a label is a stamp and emphasis is mass. Ripoff: Normal
-        for the five words of the home screen, Thin for the head of a page and
-        the headings inside one, so the archive gets QUIETER the further in you
-        go. Which is the right way round for something built to read in.
+        Oxygen is set in two weights, and BOLD is now the resting state of
+        every heading in the app, not a step up from it. It wasn't always: the
+        headings inside an essay used to stay Light on purpose, on the theory
+        that a section break should read as calm rather than shouted. Zoe
+        called that trade the wrong way round — a heading is still a title,
+        and every other title in the archive is bold — so .prose h2 is BOLD
+        now like the two above it, and Light 300 is left carrying only copy
+        and rows, the text a heading interrupts rather than the heading
+        itself. Bold 700 is everything the archive wants LOUD, at every size
+        it appears: the caps labels, `<strong>`, a heading inside an essay,
+        the home screen's five words, and the page title each of them opens
+        onto. Emphasis is mass, at every size — which was already true of the
+        body face and is now true of the whole scale at once, headings
+        included.
 
      2. Every spatial value is a multiple of --u. No magic numbers.
 
-     3. THE TYPE SCALE IS DELIBERATELY BROKEN. It used to be geometric, each
-        step about 1.3× the last, which is what you build when every size has
-        to be able to sit next to every other one. This one is two clusters
-        with a canyon between them: 11 / 13 / 15 for everything functional,
-        18 for the reading copy, then 30 / 56 / 60 for the three sizes of
-        title. There is nothing in the twenties on purpose. A folder
-        word is nearly four times the row beneath it, not one comfortable step
-        above it, and the space that opens up between them is the layout.
-
-        The home screen's 60 is the largest size in the app, and it is larger
-        than the 56 a page's own title gets. That is the right way round: the
-        contents page is a poster and a page is something you read.
+     3. ONE TYPE SCALE, iOS's OWN. It used to be a deliberately broken scale of
+        its own invention — two clusters and a canyon, nothing in the twenties
+        on purpose, and two separate 34px tokens (--t-folder, --t-display) that
+        had drifted to the same number by two different histories rather than
+        by one decision. Both of those were the app arguing with itself about
+        how loud a title should be; iOS's own sizes settled it instead: 11 / 13
+        / 15 / 17 for everything functional and the reading copy, 20 for a
+        heading inside an essay, 34 for every LOUD title in the app — the tree
+        and a page's title alike, one token, --t-display, not two that happen
+        to agree. See the Type section below for the full sequence.
 
      4. FORM IS TWO SHAPES: a rounded pill, or nothing. Anything that houses
         content is a pill with a sharp 1px outline, filled with the page. No
@@ -169,9 +180,10 @@
   --tree-gap:  calc(var(--u) * 10);   /* 40 — half the space between branches */
   --node-gap:  calc(var(--u) * 5);    /* 20 — leaf to leaf                    */
   /* Those two moved APART from each other, and the gap between them is now the
-     home screen's whole rhythm: 80px between two 60px folder words, 20px
-     between the 13px rows under one. An open folder is a dense block hanging
-     off an enormous heading, rather than a list at one even pace. */
+     home screen's whole rhythm: 80px between two 34px folder words, 20px
+     between the 15px rows under one. An open folder is a dense block hanging
+     off a heading more than twice its size, rather than a list at one even
+     pace. */
   --tree-x:    var(--page-x);         /* 24 — the tree's left edge IS the page
                                              margin. It used to be the icon
                                              column, with the type 36 further
@@ -181,47 +193,59 @@
                                              screen starts. See tree.js. */
 
   /* ── Type ─────────────────────────────────────────────────────────────────
-     TWO FACES, and the line between them is the line between a NAME and a
-     SENTENCE.
+     ONE FACE now. Oxygen — Light 300 and Bold 700 — carries the app AND every
+     title, which used to be a second face's job. See the doctrine at the top
+     of this file for why that face is gone and what replaced its argument.
 
-       OXYGEN — everything you read, and everything you press. Light 300
-       carries the app; Bold 700 does two jobs and they are the same job at two
-       scales: every caps label in the archive, and `<strong>` inside writing.
-       Emphasis is mass, and a label is a stamp.
+       LIGHT 300 carries copy and rows — everything the archive wants quiet.
 
-       RIPOFFSTYLE — every title, and nothing else. It is a display face from
-       2001 and it is the reason the contents page reads as a different kind of
-       object from the pages it opens. A title is not a bigger version of the
-       words underneath it; setting one in the body face at 60px just makes the
-       body face very big.
+       BOLD 700 is everything else, at every size it appears, headings
+       included: every caps label, `<strong>` inside writing, a heading
+       inside an essay, and the LOUD titles — the home screen's five words,
+       and the page title each one opens onto, both set solid. A heading used
+       to be the one exception, kept Light on the theory that a section break
+       should read as calm rather than shouted; Zoe called that the wrong
+       exception to make — a heading is still a title — so BOLD now means
+       "heavier than the copy around it," full stop, and Light is left
+       meaning only "this is copy, or a row."
 
-     RIPOFF IS SET IN TWO WEIGHTS AND THEY MEAN DEPTH.
+     THE SCALE IS APPLE'S OWN NOW, NOT A DELIBERATELY BROKEN ONE. It used to
+     be two clusters and a canyon between them — 11/13/15 functional, 18
+     reading copy, nothing in the twenties on purpose, then 30/68/68 for
+     titles set like a poster. Zoe asked for iOS's own default sizes across
+     the app instead, which is a different argument than the one that scale
+     was making — not "a title should look like a different kind of object"
+     but "this should read like the rest of the phone it lives on." Both are
+     real positions; this file holds the second one now.
 
-       NORMAL 700   the five words of the home screen. The contents page is a
-                    poster and it is the loudest thing in the archive.
-       THIN 400     the head of a page, and the headings inside one. Quieter
-                    than the word you tapped to get here, because you are about
-                    to read underneath it.
+       11   Caption 2    caps labels, dates, counts       (--t-micro)
+       13   Footnote     captions, secondary               (--t-meta)
+       15   Subheadline  leaf rows, card rows, the field    (--t-row)
+       17   Body         reading copy                       (--t-body)
+       20   Title 3      a heading inside an essay           (--t-title)
+       34   Large Title  the home screen's five words, and a page's own
+                         title — one token for both       (--t-display)
 
-     So the archive gets quieter the further in you go — 60px of solid display
-     face on the contents page, 72px of hairline display face at the head of
-     what it opened, 18px of Oxygen Light for the writing itself. Which is the
-     right way round for something built to read in.
+     The three functional sizes didn't move — 11, 13 and 15 already were
+     Apple's own numbers, which is either a coincidence or evidence this
+     scale was never as far from the system as the old doctrine made it
+     sound. The two title sizes did: 30 → 20 and 68 → 34. A folder word used
+     to be nearly four times the row beneath it and carry the screen the way
+     a poster does; at 34 it's closer to two and a bit times, present but no
+     longer the whole argument for the screen. The tree's words also gave up
+     the hollow outline they briefly drew themselves as here — a poster-scale
+     device with nothing left to earn its keep once the size itself stopped
+     being a poster. That's the trade being made on purpose, not a side
+     effect of chasing a number.
 
-     THE SCALE IS TWO CLUSTERS AND A CANYON.
-
-       11 13 15       everything functional. Bold caps at the bottom of it.
-       18             the reading copy — one step proud of the row beneath it,
-                      because it is set alone at a distance, not next to a row
-                      it has to match.
-       ---- nothing ----
-       30 56 60       the three sizes of title. All Ripoff.
-
-     There is nothing between 18 and 30 and there is not supposed to be. It was
-     a geometric ramp — each step about 1.3× the last — which is what you build
-     when every size has to be able to sit next to every other one. A folder
-     word is nearly four times the row beneath it now, not one comfortable step
-     above it, and the space that opens up between them is the layout.
+     THE TREE AND THE PAGE TITLE USED TO BE TWO VARIABLES — --t-folder and
+     --t-display — THAT HAD ARRIVED AT 34 RATHER THAN BEEN GIVEN IT: see the
+     history under the declarations below for how each got there on its own.
+     Once iOS's Large Title put both there ON PURPOSE, keeping two names for
+     one number was just a hedge against a divergence with no reason left to
+     happen. One token now, --t-display, for both — which is the literal
+     answer to "make the tree the same size as an essay title": it no longer
+     CAN be a different size, because there is only the one size to set it to.
 
      Italic belongs to writing only: .prose em and the I in the editor's mark
      row. Nothing in the chrome leans. */
@@ -230,48 +254,53 @@
   --w:          300;
   --w-bold:     700;
 
-  /* Falls back to --font, not to a system face. Ripoff carries Latin-1 and no
-     further, so a title with a character outside that coverage sets that one
-     word in Oxygen — which is a legible seam rather than an arbitrary third
-     typeface arriving on one screen. */
-  --font-title:   'Ripoff', var(--font);
-  --w-title:      400;   /* Thin   — a page's own title   */
-  --w-title-bold: 700;   /* Normal — the home screen only */
+  --t-micro:   11px;   /* caps labels, dates, counts — BOLD, iOS Caption 2      */
+  --t-meta:    13px;   /* captions, secondary — iOS Footnote                    */
+  --t-row:     15px;   /* leaf rows, card rows, the field — iOS Subheadline     */
+  --t-body:    17px;   /* reading copy — iOS Body                               */
+  --t-title:   20px;   /* a heading inside an essay — BOLD, iOS Title 3         */
+  --t-display: 34px;   /* the tree's five words AND a page's own title — BOLD,
+                           iOS Large Title, one token for both — see below     */
 
-  --t-micro:   11px;   /* caps labels, dates, counts — BOLD   */
-  --t-meta:    13px;   /* captions, secondary                 */
-  --t-row:     15px;   /* leaf rows, card rows, the field     */
-  --t-body:    18px;   /* reading copy — essays live here     */
-  --t-title:   30px;   /* headings inside an essay — Ripoff   */
-  --t-folder:  68px;   /* the home screen's five words        */
-  --t-display: 68px;   /* essay and work titles — see below   */
+  /* This one number carries two separate histories that only converged
+     later, which is why it used to be two variables, --t-folder and
+     --t-display, rather than one. The folder size went up (56 → 60 → 68) as
+     the tree words became OUTLINES rather than solid type, because an
+     outline puts a fraction of the ink on the screen a filled letter does and
+     the five words needed the size back to stay the loudest thing on the
+     screen. The page-title size went 56 → 68, and touched 90 on the way — 90
+     was a title that WAS the page, four lines of it with the copy beginning
+     somewhere below the fold; 68 pulled back to two or three lines with the
+     first paragraph on screen too. Both of those moves were pulling the same
+     direction: bigger, to carry more of the screen alone.
 
-  /* --t-folder went up with the tree words becoming OUTLINES rather than
-     solid type. An outline puts a fraction of the ink on the screen that a
-     filled letter does, so at 60 the home screen went quiet in a way that was
-     never the intention — the five words are still the loudest thing in the
-     app, they are just drawn rather than printed. Eight more pixels buys back
-     the presence the fill was carrying. See .folder__name in app.css.
+     THAT MOVE PULLED THE OTHER WAY, AND FOR A DIFFERENT REASON — 68 → 34 on
+     both was not a taste dial on the same argument, it's iOS's own Large
+     Title size standing in for a number this file used to pick itself. The
+     poster got smaller because the poster was the thing being traded away.
+     Both stayed BOLD regardless — the tree gave up its fill and the page
+     title took it, so the two heaviest things in the archive are still never
+     on screen at the same time; that part of the reasoning survives the
+     resize untouched.
 
-     --t-display went 56 → 68, and it went to 90 on the way. 90 was a title
-     that WAS the page: four lines of it on almost everything in the archive,
-     with the copy beginning somewhere below the fold. 68 is the same idea one
-     step back — two or three lines for a real title, still a solid justified
-     rectangle at --leading-block, but the first paragraph is on screen with
-     it. A title that has to be scrolled past is a cover, not a heading.
-
-     It is set BOLD now regardless of the size — the tree gave up its fill and
-     the page title took it, so the two heaviest things in the archive are
-     never on screen at the same time. That is the part that mattered; the
-     number is a taste dial on top of it. */
+     AND ONCE BOTH HISTORIES HAD LANDED ON THE SAME NUMBER FOR THE SAME
+     REASON — iOS's Large Title, not a coincidence any more — two variables
+     were just two names an editor could let drift apart again for no reason
+     anyone could defend. Folded into the one declared above. If the tree and
+     a page's title ever need to diverge again, that is a new decision to
+     make out loud, not a default two names would fall back into quietly. */
 
   --track-caps:   0.16em;
 
-  /* The three title sizes only, and it is a DIFFERENT problem from the one it
-     used to solve. It was -0.015em, holding 38px of Oxygen Light together.
-     Ripoff at 60 and 72 is a geometric face whose default fit is drawn for a
-     word or two at poster size — it does not fall apart, it sits loose, and a
-     small pull is what makes five words read as one object. */
+  /* The title sizes only — --t-title and --t-display, the latter now doing
+     double duty for the tree and a page's own title since the merge above.
+     It's an em value, so it scales with whichever it's on rather than
+     needing a number per size — this was tuned when the titles were 68px,
+     and stayed unchanged at 34, which is worth a glance on the deployed site
+     since a pull sized for a poster isn't automatically the right pull for
+     iOS's own Large Title. It was -0.015em before either of those, holding
+     38px of Oxygen Light together for the tree alone, back when the tree was
+     the only thing set large. */
   --track-tight: -0.02em;
 
   --leading:       1.45;     /* body copy                             */
@@ -281,24 +310,34 @@
      and nothing around it. */
   --leading-display: 0.98;
 
-  /* A PAGE'S OWN TITLE, AND ONLY THAT — the one thing in the app set as a
-     BLOCK rather than as lines. .head__title is justified to both edges with
-     its last line justified too, and this is the leading that turns that into
-     a solid rectangle of type instead of a stack of stretched sentences.
+  /* A PAGE'S OWN TITLE, AND ONLY THAT — still the one place in the app that
+     wants leading this tight for more than a single line. It used to be
+     doing double duty: this leading, plus `text-align-last: justify` on
+     .head__title, together turned a multi-word title into a solid rectangle
+     with every line running margin to margin. The justify half of that is
+     gone now — titles are left-aligned, the plain default — but a bold,
+     multi-line title still reads as one held-together thing at a tighter
+     leading than a paragraph wants, so this number stayed even after the
+     rule it was paired with left. See .head__title in app.css for the
+     justify history if it's ever wanted back.
 
-     0.80 IS THE FLOOR AND IT IS A FACT ABOUT RIPOFF, NOT A TASTE. The face
-     draws to exactly 0.80em above the baseline and, apart from q and the
-     comma, nothing at all below it — so at 0.80 the caps of one line stand
-     directly on the caps of the next with nothing between them, which is as
-     solid as type gets while still being type. Below this the lines do not
-     tighten, they MERGE: the next line's caps climb into the one above and the
-     words stop being separately readable. If it needs to go further the answer
-     is a smaller --t-display, not a smaller number here — that packs more
-     lines into the same block without printing them through each other.
+     THIS USED TO BE 0.80, AND THAT WAS A FACT ABOUT RIPOFF, NOT A TASTE. That
+     face drew to exactly 0.80em above the baseline and, apart from q and the
+     comma, nothing at all below it, so the caps of one line could stand
+     directly on the caps of the next with nothing between them — as solid as
+     type gets while still being type. Oxygen has ordinary descenders (g, y,
+     p, q, j drop well below the baseline), so 0.80 on THIS face isn't a tight
+     block, it's lines printing through each other the moment a title wraps
+     and one of those letters shows up in it. That would have been silent and
+     ugly rather than loud and broken, which is the dangerous kind of bug.
 
-     In almost any other face 0.80 would already be an overlap. This one is
-     drawn on a flat cap line with no descender, which is why it can do it. */
-  --leading-block: 0.80;
+     1.05 is the new floor: tight enough that a multi-word title still reads
+     as one held-together block rather than a stack of ordinary lines, loose
+     enough that a descender on one line clears the caps on the next. If a
+     title ever needs to pack tighter than this, the answer is still a smaller
+     --t-display, not a smaller number here — that packs more lines into the
+     same block without printing them through each other. */
+  --leading-block: 1.05;
 
   /* ── Form ─────────────────────────────────────────────────────────────────
      A rounded pill, or nothing. --r-2 is the one middle ground and it exists
@@ -320,13 +359,11 @@
   --r-pill: 999px;
   --hair:   1px;
 
-  /* The tree words, and nothing else in the app, are drawn as outlines. 1.5 is
-     what survives the round trip: --hair is invisible against 68px of Ripoff
-     Normal and reads as a rendering artefact, and 2 closes the counters in the
-     o and the a at the sizes the shorter words set at. This is a stroke on
-     type rather than a rule, so it is deliberately NOT --hair — it does not
-     want to match the outline on a pill. */
-  --stroke-title: 1.5px;
+  /* --stroke-title used to live here — the width of the hollow outline the
+     tree's five words were drawn as. Retired along with the outline itself:
+     see the doctrine at the top of this file and .folder__name in app.css.
+     It was 1.5px, tuned against Ripoff Normal's counters at a 68px poster
+     size, if a stroke treatment is ever wanted again at the current 34px. */
 
   /* ── Texture ──────────────────────────────────────────────────────────────
      One layer, everywhere: grain over the whole app. The home screen briefly

@@ -1,26 +1,41 @@
-<!-- THE APP ICON, AT SOURCE. A black lowercase "a" in RipoffSTYLE Normal on
-     pure white — the same face the home screen's five words are set in, so the
-     thing on the springboard is a letter out of the archive rather than a logo
-     drawn for it. It was a lime "a" on light grey; the palette is #000 and
-     #FFF and nothing else, and the icon had no business being the one place a
-     third colour survived.
+<!-- THE APP ICON, AT SOURCE. A black lowercase "a" on pure white, pulled out of
+     RipoffSTYLE Normal once, back when that was the face the home screen's
+     five words were set in — the icon predates Oxygen becoming the app's only
+     font (see base.css) and is now a fixed mark rather than a live sample of
+     anything currently on screen, the way a wordmark drawn from a former
+     housefont still is one. It was a lime "a" on light grey before that; the
+     palette is #000 and #FFF and nothing else, and the icon had no business
+     being the one place a third colour survived.
 
-     THE OUTLINE IS BAKED IN, NOT SET AS TEXT. Ripoff is not installed on
-     whatever renders this, and an icon that depends on a font is an icon that
-     silently becomes Helvetica. The path below is the glyph, pulled out of
-     RIPOSNORMAL.TTF once; the transform flips the font's y-up coordinates and
-     scales the 470-unit glyph to 624px on a 1024 canvas — about 61%, which
-     keeps it inside the squircle iOS masks it with.
+     THE OUTLINE IS BAKED IN, NOT SET AS TEXT — it never depended on Ripoff
+     being installed on whatever renders this, which is exactly what makes it
+     safe to keep now that the font itself is gone from the app. The path
+     below is the glyph, pulled out of RIPOSNORMAL.TTF once; the transform
+     flips the font's y-up coordinates and scales the 470-unit glyph to 624px
+     on a 1024 canvas — about 61%, which keeps it inside the squircle iOS
+     masks it with.
 
-     Regenerate the PNGs from this file, at each size rather than by
-     downsampling one — the shape is all hard diagonals and they stay crisp
-     only if they are rasterised at the size they are drawn at:
+     Regenerate the PNGs from this file with tools/gen-icons.sh. It lives
+     there and not as a copy-paste block here for a dumb XML reason: a
+     comment cannot contain two hyphens in a row, and every flag a headless
+     Chrome command needs has exactly that. This file shipped with that exact
+     mistake for a while, and Chrome does not fail loudly on bad XML — it
+     silently renders ITS OWN error page in place of the SVG, and a
+     screenshot of a blank white error page reads as a blank icon. That is
+     what 180/192/512 actually were: pure white, everywhere but 1024, which
+     had been generated before this comment grew the offending line.
 
-       for S in 180 192 512 1024; do
-         "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
-           --headless=new --disable-gpu --screenshot=icons/icon-$S.png \
-           --window-size=$S,$S file://$PWD/icons/icon.svg
-       done -->
+     The script renders once at 1024 and downsamples the rest, which is a
+     change from rasterising each size natively in Chrome — that was the
+     first fix tried, and it uncovered a SECOND bug behind the same symptom:
+     headless mode's screenshot flag does not scale an SVG document to the
+     size its window-size flag asks for, it CROPS to it, capturing the
+     top-left corner of the full 1024 canvas.
+     For 180/192 that corner is blank margin; for 512 it was a partial corner
+     of the mark. 1024 was the only size where cropping and scaling agree,
+     which is why it alone was ever right. The glyph is two flat polygons
+     with no fine detail, so a Lanczos downsample from a crisp 1024 loses
+     nothing a native render would have kept. -->
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
 <rect width="1024" height="1024" fill="#FFFFFF"/>
 <g transform="translate(196.017 800.766) scale(1.327660 -1.327660)">

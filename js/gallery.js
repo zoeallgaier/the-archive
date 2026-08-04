@@ -83,11 +83,19 @@ function grid(nodes, onChange) {
       onclick: () => openLightbox(node, { onDelete: onChange }),
     });
 
-    // An intrinsic size per tile, from the real aspect ratio, so the scrollbar
-    // is honest before a single image has decoded.
-    if (node.w && node.h) {
-      tile.style.containIntrinsicSize = `auto ${Math.round((node.h / node.w) * 100)}%`;
-    }
+    /* The tile's real shape, so it occupies its final height before a single
+       image has decoded and the wall doesn't reflow under the thumb.
+
+       This was `contain-intrinsic-size: auto <n>%` and it did nothing at all:
+       that property takes lengths, a percentage is not a valid value, and the
+       declaration was dropped on the floor by every engine. Which left every
+       off-screen tile — the ones content-visibility skips — reserving the flat
+       300px fallback in app.css regardless of whether the photo was a portrait
+       or a panorama, so the scrollbar lied and the grid jumped as you scrolled.
+
+       aspect-ratio is the property that actually says this, it needs no
+       fallback, and it holds whether or not the image has arrived. */
+    if (node.w && node.h) tile.style.aspectRatio = `${node.w} / ${node.h}`;
 
     const img = el('img', {
       alt: node.title || '',

@@ -234,5 +234,18 @@
 <div class="grain" aria-hidden="true"></div>
 
 <script type="module" src="js/app.js"></script>
+
+<!-- The offline copy, and only where there is a network to be offline from.
+     The native build serves every one of these files off the device already —
+     registering a worker inside Capacitor's own scheme would be a second
+     caching layer over a filesystem read, which can only ever be slower and
+     staler. See sw.js. -->
+<script>
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
+</script>
 </body>
 </html>

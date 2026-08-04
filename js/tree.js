@@ -40,6 +40,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import * as store from './store.js';
+import * as create from './create.js';
 import { el, label, fmtDate, fmtYear } from './ui.js';
 import { tick, selectionTick } from './platform.js';
 
@@ -135,10 +136,17 @@ function branch(folder, nav) {
      work   the year, and how many pieces
      read   who wrote it, and the day you finished it
 
-   Reads are inert on purpose. A book here is a record that it was read, not a
-   document: there is no body, no images, no link — a page for one would be the
-   same two lines you're already looking at, on a screen of their own. So the
-   list IS the content, and the folder holds it.
+   A book still has no page. It's a record that it was read, not a document:
+   no body, no images, no link — a screen for one would be the same two lines
+   you're already looking at, on a screen of their own. So the list IS the
+   content, and the folder holds it.
+
+   What it no longer is, is inert. The row went nowhere AND did nothing, which
+   meant a book had no Edit and no Delete anywhere in the app: the ⋯ that
+   carries those for an essay lives on the essay's page, and a book has no page
+   to hang one on. It was write-once for good. Tapping the row now opens the
+   card that ⋯ would have opened — see bookCard in create.js. The record still
+   doesn't become a document; it just stops being unamendable.
 
    Which is exactly why the date belongs on that line. The record is *that you
    read it*, and a record of an event without its date is half a record. The
@@ -153,24 +161,36 @@ function branch(folder, nav) {
 
 const TREAT = {
   essay: { sub: (n) => (n.draft ? 'Draft' : fmtDate(n.date)) },
-  read:  { inert: true, sub: (n) => [n.author, fmtDate(n.date)]
-                                      .filter(Boolean).join(' · ') },
-  work:  { sub: (n) => [fmtYear(n.date), n.count && `${n.count} pieces`]
-                        .filter(Boolean).join(' · ') },
+  // `card` rather than a route: a book has no screen to go to, only two verbs.
+  read:  { card: true, sub: (n) => [n.author, fmtDate(n.date)]
+                                     .filter(Boolean).join(' · ') },
+  /* Counted live, not read off the node. `count` is a field the migration
+     stamped onto the two seeded works and nothing has updated since — so
+     adding five photographs to Recursia left the tree still saying 15 while
+     the gallery one tap in said 20. The number is derivable, so derive it:
+     the gallery already counts its own children the same way. */
+  work:  { sub: (n) => {
+    const pieces = store.count(`${n.path}/`);
+    return [fmtYear(n.date), pieces && `${pieces} pieces`].filter(Boolean).join(' · ');
+  } },
 };
 
 function leaf(node, treat, nav) {
   const t = TREAT[treat] || {};
   const text = t.sub ? t.sub(node) : '';
 
-  const row = el(`${t.inert ? 'div' : 'button'}.node`
-    + `${t.inert ? '.node--inert' : ''}${node.draft ? '.node--draft' : ''}`, {},
+  const row = el(`button.node${node.draft ? '.node--draft' : ''}`, {},
     el('span.node__name', { text: label(node) }),
     text ? el('span.node__sub', { text }) : null);
 
-  if (!t.inert) {
-    row.addEventListener('click', () => { selectionTick(); nav(routeFor(node)); });
-  }
+  row.addEventListener('click', () => {
+    selectionTick();
+    // Re-entering the route rebuilds the tree in place, so a renamed book or a
+    // deleted one is reflected without leaving the screen. Which folders are
+    // open is module state, so the tree comes back the shape you left it.
+    if (t.card) create.bookCard(node, () => nav(location.hash || '#/', true));
+    else nav(routeFor(node));
+  });
   return row;
 }
 

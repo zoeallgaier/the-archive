@@ -191,10 +191,38 @@ function unwrapAroundBlocks(box) {
   }
 }
 
+/* A block that is only ever allowed to hold words.
+
+   This is the same failure as unwrapAroundBlocks above, one level up, and it is
+   the more dangerous one. A DOM assembled by hand — which is what a run of
+   execCommands in a webview leaves behind — will happily hold `<p><h2>…</h2></p>`
+   or `<p>text<ul><li>…</li></ul></p>`. Nothing complains, it renders, and it
+   serialises to a string. Then the HTML PARSER reads that string back on the
+   next load, applies the content model the DOM never enforced, and closes the
+   <p> before the block it illegally contained — so one paragraph becomes three,
+   an <h2> jumps out of its wrapper, and a list is emptied into loose lines. The
+   document changes shape every single time it is opened.
+
+   That is the exact corruption an allowlist exists to prevent, and the allowlist
+   was checking the wrong thing: rebuild() asks whether each TAG is permitted and
+   never asks whether the tags are legally nested. So the offender is unwrapped
+   and its children stand at the level they actually belong to.
+
+   Deepest-first, for the same reason as above: unwrapping an inner block leaves
+   its children in the outer one, which is then seen by the same loop. */
+function unwrapNestedBlocks(box) {
+  for (const n of [...box.querySelectorAll('p, h2, figcaption')].reverse()) {
+    if ([...n.children].some((c) => BLOCKISH.has(c.nodeName))) {
+      n.replaceWith(...n.childNodes);
+    }
+  }
+}
+
 /* Loose text at the top level becomes a paragraph, and blocks carrying nothing
    are dropped — see the note on the second loop for why. */
 function normalise(box) {
   unwrapAroundBlocks(box);
+  unwrapNestedBlocks(box);
 
   const out = document.createElement('div');
   let para = null;
@@ -338,7 +366,26 @@ function list(host, on, check) {
   let ul = ancestor(host, 'ul');
   if (!ul) {
     document.execCommand('insertUnorderedList');
+
+    /* The item the caret is in, taken BEFORE the list is moved, because
+       lift() is what loses it.
+
+       WebKit does not keep the selection across `wrap.replaceWith(ul)`: the
+       range's endpoints are inside the <ul>, the <ul> itself survives intact,
+       and the caret is still simply gone — it lands back in `host` at the
+       offset the old wrapper occupied, which is OUTSIDE the list. The first
+       word you then typed became a bare text node sitting in front of the
+       bullet, the next Enter wrapped that text and the list together in a
+       fresh <p>, and every mark applied after it nested one more block inside
+       another. That is the whole shape of the corruption this used to write,
+       and it started here.
+
+       So the <li> is held onto and the caret put back into it by hand. There
+       is nothing else left to restore it from once the move has happened. */
+    const li = ancestor(host, 'li') || ancestor(host, 'ul')?.firstElementChild;
+
     ul = detach(host, lift(host, ancestor(host, 'ul')), check);
+    if (li && li.isConnected) caretAtEnd(li);
   }
   ul?.toggleAttribute('data-check', check);
 }
@@ -397,6 +444,56 @@ function detach(host, ul, check) {
   return fresh;
 }
 
+/* The caret sitting in a bare text node directly inside the editable is the
+   state every serious editing bug in this file has started from: it is what a
+   lifted list used to leave behind, and it is what WebKit's own `outdent`
+   leaves when it takes a <blockquote> away without putting a paragraph back.
+   Nothing is visibly wrong — the words are on screen — but the next Enter
+   wraps the loose text AND whatever block follows it in one fresh <p>, and
+   from there the document is nesting blocks inside blocks.
+
+   So the run of loose inline nodes around the caret is gathered into a <p>.
+   The nodes are MOVED rather than rebuilt, so the text node the selection is
+   anchored in is the same object afterwards and the exact offset survives. */
+function blockifyCaret(host) {
+  const sel = document.getSelection();
+  if (!caretIn(host)) return;
+
+  const { anchorNode, anchorOffset } = sel;
+
+  // The top-level node the caret is inside.
+  let top = anchorNode === host
+    ? (host.childNodes[anchorOffset] ?? host.lastChild)
+    : anchorNode;
+  while (top && top.parentNode && top.parentNode !== host) top = top.parentNode;
+  if (!top || top.parentNode !== host) return;
+
+  const loose = (n) => n && !(n.nodeType === Node.ELEMENT_NODE && TOP.has(n.nodeName));
+  if (!loose(top)) return;
+
+  let first = top;
+  let last = top;
+  while (loose(first.previousSibling)) first = first.previousSibling;
+  while (loose(last.nextSibling)) last = last.nextSibling;
+
+  const p = document.createElement('p');
+  host.insertBefore(p, first);
+  for (let n = first, next; n; n = next) {
+    next = n === last ? null : n.nextSibling;
+    p.append(n);
+  }
+
+  if (anchorNode.isConnected) {
+    const r = document.createRange();
+    r.setStart(anchorNode, anchorOffset);
+    r.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(r);
+  } else {
+    caretAtEnd(p);
+  }
+}
+
 /** Collapse the caret to the end of `node`'s contents. */
 function caretAtEnd(node) {
   const r = document.createRange();
@@ -428,13 +525,32 @@ function quote(host, on) {
     return;
   }
 
-  document.execCommand('outdent');
+  /* GETTING BACK OUT OF A QUOTE, and `outdent` is not how.
 
-  // outdent is the documented way back out of a blockquote and it declines in
-  // some nestings. Unwrap by hand rather than ship a button that only works in
-  // one direction — and put the caret back, since DOM surgery drops it.
+     outdent is the documented way and in WebKit — the engine this app actually
+     ships on — it DESTROYS THE TEXT. On `<blockquote>a quote</blockquote>`,
+     which is exactly the shape the line above produces, it leaves `<p><br></p>`
+     and the words are simply gone, off the undo stack and out of the document.
+     Press Quote twice and the sentence you quoted no longer exists.
+
+     It was invisible for as long as the editor was corrupting its own markup:
+     the blockquote used to end up wrapped in a paragraph, and on THAT shape
+     outdent behaves. Fixing the nesting is what exposed this.
+
+     formatBlock is the one that's safe here, and it is tried first because it
+     is the one that writes to the browser's undo stack. It handles the shape
+     this editor makes, and quietly declines the shape a paste or a migrated
+     essay can bring — `<blockquote><p>…</p></blockquote>` — so the DOM is asked
+     which happened, and the hand-unwrap below finishes the job when it did
+     nothing. Between them both shapes come out as a paragraph, and neither of
+     them can lose a word. */
+  document.execCommand('formatBlock', false, '<p>');
+
   const bq = ancestor(host, 'blockquote');
-  if (!bq) return;
+  // formatBlock took it. It may have left the text loose in the editable rather
+  // than in a paragraph, which is the state everything else here goes wrong
+  // from — give it a block.
+  if (!bq) { blockifyCaret(host); return; }
 
   const kids = [...bq.childNodes];
   const loose = kids.some((n) => n.nodeType === Node.TEXT_NODE && n.nodeValue.trim());
@@ -818,6 +934,10 @@ export function render(path, nav, into = null) {
   title.addEventListener('input', schedule);
   bodyEl.addEventListener('input', () => {
     ensureBlock();
+    // Cheap when the caret is already in a block, which is almost always. It
+    // earns its place on the hot path by being the one guard that catches every
+    // remaining way a webview can drop the caret into loose text.
+    blockifyCaret(bodyEl);
     tidyChecks(bodyEl);
     schedule();
     marks.sync();

@@ -37,6 +37,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import * as store from './store.js';
+import * as create from './create.js';
 import { el, body, empty, label, fmtDate } from './ui.js';
 import { selectionTick } from './platform.js';
 
@@ -191,17 +192,23 @@ function row(node, nav) {
     node.draft ? 'Draft' : fmtDate(node.date),
   ].filter(Boolean).join('  ·  ');
 
-  // A book is a record, not a document — it has no page to open, so its row
-  // doesn't pretend to be a button. Same rule the tree follows.
-  const inert = node.kind === 'book';
+  // A book is a record, not a document — it has no page to open. It does have
+  // two verbs, though, so the row opens the card that carries them rather than
+  // doing nothing at all. Same rule the tree follows; see bookCard in create.js.
+  const isBook = node.kind === 'book';
 
-  const item = el(`${inert ? 'div' : 'button'}.result${inert ? '.result--inert' : ''}`, {},
+  const item = el('button.result', {},
     el('span.result__name', { text: label(node) }),
     el('span.result__sub', { text: sub }));
 
-  if (!inert) {
-    item.addEventListener('click', () => { selectionTick(); nav(routeFor(node)); });
-  }
+  item.addEventListener('click', () => {
+    selectionTick();
+    // Repaint from the field rather than re-render the view: the results are a
+    // rendering of what's in the composer, and a deleted book should drop out
+    // of the list you're looking at without the screen going anywhere.
+    if (isBook) create.bookCard(node, () => paint(currentQuery()));
+    else nav(routeFor(node));
+  });
   return item;
 }
 

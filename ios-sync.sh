@@ -9,7 +9,14 @@ cd "$(dirname "$0")"
 
 rm -rf www
 mkdir -p www
-cp index.html www/
+# manifest.webmanifest is copied because index.html <link>s it. It was missed,
+# so every native launch fetched it and got a 404 — harmless, and exactly the
+# kind of thing that stays broken for months because nothing visibly fails.
+cp index.html manifest.webmanifest www/
 cp -R css js icons fonts seed www/
+
+# sw.js is deliberately NOT copied. The native build loads every asset off the
+# device already; a service worker there would be a cache in front of a
+# filesystem read. index.html only registers it over http(s) anyway.
 
 npx cap sync ios

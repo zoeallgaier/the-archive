@@ -149,7 +149,7 @@
   --t-meta:    13px;   /* captions, secondary               */
   --t-row:     15px;   /* leaf rows in the tree             */
   --t-body:    17px;   /* reading copy — essays live here   */
-  --t-title:   26px;   /* entry titles in a list            */
+  --t-title:   26px;   /* headings inside an essay          */
   --t-folder:  30px;   /* folder rows — size IS the weight  */
   --t-display: 38px;   /* essay and work titles             */
 

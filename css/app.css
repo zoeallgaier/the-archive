@@ -138,7 +138,10 @@
 }
 .node:active { opacity: 0.5; }
 
-/* A book has nowhere to go. It doesn't press, and it doesn't pretend to. */
+/* "Nothing here yet" — the one row in the tree that is a statement rather than
+   an entry. It doesn't press, and it doesn't pretend to. Books used to be set
+   this way too and no longer are: they have two verbs now, so they press like
+   everything else. See bookCard in create.js. */
 .node--inert { cursor: default; }
 .node--inert:active { opacity: 1; }
 
@@ -571,12 +574,19 @@
   display: block;
   width: 100%;
   content-visibility: auto;
+  /* Only for a tile with no stored dimensions. Everything migrated or imported
+     carries w and h, and gallery.js gives those an aspect-ratio instead — which
+     is the real height, not a guess at one. */
   contain-intrinsic-size: auto 300px;
 }
 
 .tile img {
   width: 100%;
-  height: auto;
+  /* Fills the ratio its own tile is holding open, so the image landing can't
+     nudge the column by a rounding error. Same ratio either way, so there is
+     nothing for `cover` to crop. */
+  height: 100%;
+  object-fit: cover;
   display: block;
   border-radius: var(--r-1);
   background: var(--wash);
@@ -634,8 +644,6 @@
   transition: background var(--fast) var(--ease);
 }
 .result:active { background: var(--wash); }
-.result--inert { cursor: default; }
-.result--inert:active { background: none; }
 
 .result__name {
   display: block;

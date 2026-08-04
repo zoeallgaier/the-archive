@@ -69,7 +69,21 @@ That is the deploy — the whole of it. Pages serves the repo root from `main`.
 
 Safari → the URL → Share → **Add to Home Screen**. Once. After that a push
 reaches the phone on the next launch, because `sw.js` is network-first for the
-app itself.
+app itself — and on a *resume* too: the registration block at the end of
+`index.html` re-checks for a new worker every time the app comes back to the
+front, and reloads if one took over. That matters because tapping the icon
+after a deploy usually resumes the suspended app rather than navigating, which
+would otherwise leave it on last week's code. The reload is safe only because
+`editor.js` flushes on `visibilitychange: hidden`; do not move that check onto
+a timer.
+
+**What a deploy CANNOT change is the launch chrome.** The status bar style, the
+icon, the app name and `display: standalone` are read by iOS at Add to Home
+Screen time and frozen into the shortcut. So a change to
+`apple-mobile-web-app-status-bar-style` has no effect on an icon created before
+it — the only fix is to delete the icon and add it again, once, and there is no
+way to trigger that from inside the page. If the composer sits high off the
+bottom with a band of colour under it, that is this, not CSS.
 
 If a change appears not to land: the service worker serves the cache only when
 the network fails, so a stale screen means the request failed, not that the
@@ -138,7 +152,7 @@ js/store.js         the node index, in memory, one JSON blob behind it
 js/platform.js      storage, camera roll, feedback — the ONLY file that
                     touches localStorage, IndexedDB or a file input
 js/media.js         image paths → renderable URLs; camera-roll import
-js/palette.js       the four palettes, and the two colours the app is made of
+js/palette.js       the nine palettes, and the two colours the app is made of
 js/ui.js            el(), card(), toast(), confirm(), the shared vocabulary
 js/tree.js          home screen
 js/entries.js       the reader
@@ -206,9 +220,12 @@ before changing anything visual. In short:
 
   A palette is a **pair** — one dark colour, one light — and **the two swap with
   `prefers-color-scheme`**, so every palette follows the phone the way pure black
-  and white always did. Four of them live in `js/palette.js` — Auto, Newsprint,
-  Bondi (the 1998 iMac) and Brat; the ⌗ pill at the
-  bottom-left of the home screen opens the card. **Auto is pure black and white
+  and white always did. Nine of them live in `js/palette.js`, in three groups —
+  Auto and Newsprint, then the whole iMac G3 set (Bondi, Strawberry, Blueberry,
+  Lime, Grape, Tangerine), then Brat; the ⌗ pill at the bottom-left of the home
+  screen opens the card. Each iMac pair is the fruit at full strength against
+  the frosted grey-white of the shell, darkened until it can hold light type —
+  a palette here has to work as a page *and* as an ink in both directions. **Auto is pure black and white
   and is stored as nothing at all**, so "no palette" and "the black-and-white
   palette" are the same state and cannot come apart.
 

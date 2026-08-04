@@ -44,7 +44,7 @@
    without a dance. Bump VERSION to drop every cached byte and start again.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-const VERSION = 'v2';
+const VERSION = 'v3';
 const CACHE = `archive-${VERSION}`;
 
 /* The app, and the one file it cannot start without. Small enough to fetch in

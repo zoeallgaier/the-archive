@@ -342,10 +342,63 @@
      file:// URL, which throws on register() — still works for a quick look. -->
 <script>
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-    addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').catch(() => {});
+    /* Whether this page was ALREADY under a worker when it started. It is the
+       difference between "a new version just took over" and "a worker took
+       over for the very first time" — clients.claim() in sw.js fires the same
+       event for both, and reloading on the second one would reload every first
+       visit for nothing. */
+    var HAD_CONTROLLER = !!navigator.serviceWorker.controller;
+    var reloading = false;
+    var reg = null;
+
+    addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js')
+        .then(function (r) { reg = r; })
+        .catch(function () {});
+    });
+
+    /* A HOMESCREEN APP IS NOT RELOADED, IT IS RESUMED. This is the whole
+       problem this block exists to solve. Tapping the icon after a deploy
+       usually resumes the suspended app off the app switcher — no navigation,
+       no fetch, no new worker, and the archive sits on last week's code
+       looking exactly like it did when you put the phone down. sw.js being
+       network-first is what makes a deploy LANDABLE; this is what makes it
+       actually land.
+
+       So: every time the app comes back to the front, ask whether there is a
+       newer worker. If there is, sw.js skipWaiting()s straight past the usual
+       wait-for-all-tabs-to-close dance, claims this page, and controllerchange
+       below turns that into a reload.
+
+       Reloading is safe HERE and only here, and it is not luck — the editor
+       flushes on visibilitychange 'hidden' (see the end of editor.js), so by
+       the time the app has been backgrounded there is nothing unsaved left to
+       lose. A version check on a timer, while you were typing, would not have
+       that guarantee. */
+    addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible' && reg) reg.update();
+    });
+
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (!HAD_CONTROLLER || reloading) return;
+      reloading = true;
+      location.reload();
     });
   }
 </script>
+
+<!-- WHAT THIS STILL CANNOT UPDATE, and it is worth knowing rather than
+     rediscovering. Everything above keeps the CODE current: the CSS, the
+     modules, the seed index, on the next launch, without a dance.
+
+     The LAUNCH CHROME is a different thing and none of it is ours. The status
+     bar style, the icon, the app's name and the standalone display mode are
+     read by iOS when you tap Add to Home Screen and are baked into the
+     shortcut at that moment. A deploy does not revisit them. So changing
+     apple-mobile-web-app-status-bar-style — which is exactly what makes the
+     status bar and the home-indicator bands stop being reserved strips — has
+     no effect at all on a shortcut created before the change. The fix is to
+     delete the icon and add it again, once. There is no way to trigger it from
+     inside the page. -->
 </body>
 </html>

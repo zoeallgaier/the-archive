@@ -361,6 +361,12 @@
   font-size: var(--t-body);
   line-height: var(--leading);
   color: var(--ink-prose);
+  /* Reading copy breaks mid-word rather than overflowing the measure — a long
+     URL or an unbroken run of characters in a paragraph would otherwise push
+     the page wider than the phone. This inherits into .prose h2 below, which
+     opts back out: a title breaks at spaces like every other title, never
+     mid-word. */
+  overflow-wrap: break-word;
 }
 .prose > * + * { margin-top: var(--stack-lg); }
 
@@ -385,6 +391,9 @@
   letter-spacing: var(--track-tight);
   line-height: var(--leading-tight);
   color: var(--ink);
+  /* overflow-wrap inherits from .prose above; a title breaks at spaces like
+     every other title in the app, never mid-word. */
+  overflow-wrap: normal;
 }
 
 /* THE one place in the app that uses the bold face. Emphasis used to be a step
@@ -640,7 +649,7 @@
 }
 
 /* The two drawn marks, a touch above the app's 16px icon: they stand beside
-   17px letters here rather than alone in a button. */
+   18px letters here rather than alone in a button. */
 .marks .ic {
   width: calc(var(--u) * 5);
   height: calc(var(--u) * 5);

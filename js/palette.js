@@ -67,20 +67,30 @@ import { card, el, toast } from './ui.js';
    and white palette" are the same state and cannot come apart. Everything
    below it is a real pair and is kept exactly as given.
 
-   FOUR OF THEM, AND IT WAS SIX. Oxblood, Blueprint and Manila are gone —
-   three pairs that were each a tint of a neutral, which is what you get when
-   you fill a list by generating variations instead of choosing. Held next to
-   Newsprint they were the same idea at three different hues, and a list of
-   near-identical answers is a worse question than a short one. What is left is
-   a RANGE: black and white, then one that is nearly black and white, then two
-   that are not remotely.
+   NINE, AND THEY COME IN THREE GROUPS. Oxblood, Blueprint and Manila were
+   dropped on the way here — three pairs that were each a tint of a neutral,
+   which is what you get when you fill a list by generating variations instead
+   of choosing. Held next to Newsprint they were one idea at three hues.
 
-   BONDI is the 1998 iMac — deep Bondi Blue against the translucent grey-white
-   of the shell it was moulded in. Worth being straight about the date, since
-   the archive cares: Bondi Blue was the ONLY colour the iMac came in in 1998.
-   The five fruit flavours — Strawberry, Blueberry, Lime, Grape, Tangerine —
-   are the 5-flavour revision of January 1999. So there is one '98 iMac pair
-   here rather than five, because there was one '98 iMac.
+     Auto, Newsprint          the archive as it reads
+     Bondi … Tangerine        the iMac G3, all six
+     Brat                     the one hue this app ever had
+
+   THE IMAC BLOCK IS THE WHOLE SET, which does mean it spans two years: Bondi
+   Blue was the only colour the iMac came in in 1998, and Strawberry,
+   Blueberry, Lime, Grape and Tangerine are the five-flavour revision of
+   January 1999. Six machines, six pairs, in the order Apple showed them.
+
+   EVERY ONE OF THEM IS THE SAME PAIR: the fruit at full strength as the dark
+   colour, and the translucent grey-white of the shell it was moulded in as the
+   light one. That is not a shortcut, it is what the object was — a saturated
+   body behind a frosted case, and the case was the same frosted case on all
+   six. It also happens to be the only reading that survives this app's rules,
+   because a palette here has to work as a page AND as an ink in BOTH
+   directions. Tangerine as an ink on white is legible; Tangerine as a page
+   with white type on it is not, at any weight. Darkening each fruit to the
+   point where it can hold light type is what makes the set usable, and it is
+   why these are deeper than the plastic looked under a shop light.
 
    BRAT is the lime the app icon used to be drawn in, at the album's own green.
    It is the only pair here where the LIGHT colour is the loud one — in light
@@ -89,10 +99,18 @@ import { card, el, toast } from './ui.js';
    a decision for the person holding the phone. */
 
 const PRESETS = [
-  { name: 'Auto',      dark: '#000000', light: '#ffffff', ships: true },
-  { name: 'Newsprint', dark: '#141414', light: '#f2efe7' },
-  { name: 'Bondi',     dark: '#004e61', light: '#dfeeed' },
-  { name: 'Brat',      dark: '#000000', light: '#8ace00' },
+  { name: 'Auto',       dark: '#000000', light: '#ffffff', ships: true },
+  { name: 'Newsprint',  dark: '#141414', light: '#f2efe7' },
+
+  /* The iMac G3, in the order Apple showed them. */
+  { name: 'Bondi',      dark: '#004e61', light: '#dfeeed' },
+  { name: 'Strawberry', dark: '#6b0f2a', light: '#f2e0e4' },
+  { name: 'Blueberry',  dark: '#1b2f6e', light: '#dfe3f2' },
+  { name: 'Lime',       dark: '#2f5a13', light: '#e6f0dd' },
+  { name: 'Grape',      dark: '#43206b', light: '#e7e0f2' },
+  { name: 'Tangerine',  dark: '#7a3208', light: '#f7e6da' },
+
+  { name: 'Brat',       dark: '#000000', light: '#8ace00' },
 ];
 
 /* ── Colour ─────────────────────────────────────────────────────────────────

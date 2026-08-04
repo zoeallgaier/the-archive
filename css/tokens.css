@@ -31,9 +31,9 @@
      3. THE TYPE SCALE IS DELIBERATELY BROKEN. It used to be geometric, each
         step about 1.3× the last, which is what you build when every size has
         to be able to sit next to every other one. This one is two clusters
-        with a canyon between them: 11 / 13 / 15 / 17 for everything
-        functional and for the reading copy, then 30 / 56 / 60 for the three
-        sizes of title. There is nothing in the twenties on purpose. A folder
+        with a canyon between them: 11 / 13 / 15 for everything functional,
+        18 for the reading copy, then 30 / 56 / 60 for the three sizes of
+        title. There is nothing in the twenties on purpose. A folder
         word is nearly four times the row beneath it, not one comfortable step
         above it, and the space that opens up between them is the layout.
 
@@ -196,17 +196,19 @@
 
      So the archive gets quieter the further in you go — 60px of solid display
      face on the contents page, 72px of hairline display face at the head of
-     what it opened, 17px of Oxygen Light for the writing itself. Which is the
+     what it opened, 18px of Oxygen Light for the writing itself. Which is the
      right way round for something built to read in.
 
      THE SCALE IS TWO CLUSTERS AND A CANYON.
 
-       11 13 15 17    everything functional, and the reading copy. Bold caps at
-                      the bottom of it, Light at the top.
+       11 13 15       everything functional. Bold caps at the bottom of it.
+       18             the reading copy — one step proud of the row beneath it,
+                      because it is set alone at a distance, not next to a row
+                      it has to match.
        ---- nothing ----
        30 56 60       the three sizes of title. All Ripoff.
 
-     There is nothing between 17 and 30 and there is not supposed to be. It was
+     There is nothing between 18 and 30 and there is not supposed to be. It was
      a geometric ramp — each step about 1.3× the last — which is what you build
      when every size has to be able to sit next to every other one. A folder
      word is nearly four times the row beneath it now, not one comfortable step
@@ -230,7 +232,7 @@
   --t-micro:   11px;   /* caps labels, dates, counts — BOLD   */
   --t-meta:    13px;   /* captions, secondary                 */
   --t-row:     15px;   /* leaf rows, card rows, the field     */
-  --t-body:    17px;   /* reading copy — essays live here     */
+  --t-body:    18px;   /* reading copy — essays live here     */
   --t-title:   30px;   /* headings inside an essay — Ripoff   */
   --t-folder:  68px;   /* the home screen's five words        */
   --t-display: 68px;   /* essay and work titles — see below   */
@@ -263,7 +265,7 @@
      small pull is what makes five words read as one object. */
   --track-tight: -0.02em;
 
-  --leading:       1.6;      /* body copy                             */
+  --leading:       1.45;     /* body copy                             */
   --leading-tight: 1.1;      /* rows, labels, anything one line high  */
 
   /* The folder words of the home screen. Just under 1, so a branch is the word

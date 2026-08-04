@@ -355,7 +355,7 @@
 
   --r-0:    0;
   --r-1:    2px;                   /*  2 — every image, always */
-  --r-2:    calc(var(--u) * 5);    /* 20 — cards, panels       */
+  --r-2:    calc(var(--u) * 7);    /* 28 — cards, panels: iOS's own sheet radius, not ours */
   --r-pill: 999px;
   --hair:   1px;
 

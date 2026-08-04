@@ -129,6 +129,15 @@
 
   --u:         4px;
   --gutter:    calc(var(--u) * 4);    /* 16 — between grid items          */
+  /* How far the composer and the card sit off the TRUE bottom edge — its own
+     number, not --gutter, because it moved once already (16 read as a touch
+     tight against the home indicator once the strip behind it was actually
+     painted) and the two ideas — "space between grid items" and "space
+     between the row and the edge of the glass" — shouldn't move together by
+     accident just because they'd started at the same number. Still nowhere
+     near the old env(safe-area-inset-bottom) value (~50px) that read as a
+     reserved strip — see .composer in app.css. */
+  --nav-gutter: calc(var(--u) * 6);   /* 24 — composer/card off the true edge */
   --page-x:    calc(var(--u) * 6);    /* 24 — page side margin            */
   --stack:     calc(var(--u) * 3);    /* 12 — between stacked text        */
   --stack-lg:  calc(var(--u) * 9);    /* 36 — between sections            */
@@ -151,7 +160,7 @@
      app rather than over a reserved strip. This has to be exactly the height
      the composer occupies or the last row in a list ends up behind it, so the
      two numbers move together. See .composer in app.css. */
-  --float-clear: calc(var(--nav-h) + var(--gutter));
+  --float-clear: calc(var(--nav-h) + var(--nav-gutter));
 
   /* The rhythm of the home screen. --tree-gap is the air on EACH side of a
      divider, so the space between two branches is twice it and the hairline

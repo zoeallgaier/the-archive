@@ -810,15 +810,16 @@
 .composer {
   position: fixed;
   left: 0; right: 0;
-  /* ONE GUTTER OFF THE TRUE BOTTOM EDGE. There was an
-     env(safe-area-inset-bottom) here too, which on a notched phone put the row
-     50px up and left an empty band under it that read as a reserved strip the
-     app was not allowed into. The home indicator is a 5px bar iOS draws OVER
-     the page, not a region it takes away, and a 48px pill starting 16px up
-     clears it. So the archive runs to the physical bottom of the glass and the
-     indicator floats on top of it, the same way the status bar now floats on
-     top of the other end. --float-clear tracks this number; see tokens.css. */
-  bottom: var(--gutter);
+  /* --nav-gutter OFF THE TRUE BOTTOM EDGE, not --gutter — see tokens.css.
+     There was an env(safe-area-inset-bottom) here too, which on a notched
+     phone put the row 50px up and left an empty band under it that read as a
+     reserved strip the app was not allowed into. The home indicator is a 5px
+     bar iOS draws OVER the page, not a region it takes away, and a 48px pill
+     starting 24px up clears it with room to spare. So the archive runs to the
+     physical bottom of the glass and the indicator floats on top of it, the
+     same way the status bar now floats on top of the other end. --float-clear
+     tracks this number; see tokens.css. */
+  bottom: var(--nav-gutter);
   z-index: var(--z-nav);
   display: flex;
   align-items: center;
@@ -981,7 +982,7 @@
   left: 0; right: 0;
   /* The same edge as the composer, because this IS the composer expanded —
      they must never sit at two different heights. See .composer above. */
-  bottom: var(--gutter);
+  bottom: var(--nav-gutter);
   z-index: calc(var(--z-sheet) + 1);
   padding: 0 var(--page-x);
   opacity: 0;

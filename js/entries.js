@@ -96,38 +96,22 @@ export async function renderReader(path, nav) {
   const scroller = body(head(label(node), meta), article);
   view.append(scroller);
 
-  // Notes only — see wireTapToEdit. An essay keeps Edit behind the ⋯: it's a
-  // finished piece, and turning the whole page into a button would make
-  // reading one feel like standing on a trapdoor.
-  if (node.kind === 'essay' && path.startsWith('braindumps/')) wireTapToEdit(scroller, path, nav);
-
   return view;
 }
 
-/* ── Notes: notes-app style ──────────────────────────────────────────────────
-   A note has no separate reading mode: the page you scroll IS the page you'd
-   edit, and a tap is the only thing that tells the two apart. Scrolling (and a
-   tap that lands while the view is still coasting from one) must never fall
-   into the editor — so this doesn't hand-roll a tap/drag threshold at all. It
-   listens for `click`, and lets the webview's own gesture recognizer decide:
-   WebKit already withholds `click` after a touch has dragged the scroller, and
-   withholds it again when a touch lands only to stop a momentum scroll rather
-   than to tap what's under it. That's the exact "leeway for accidental taps"
-   asked for, for free — the same assumption liveChecklist already leans on a
-   few lines up.
+/* ── Notes ──────────────────────────────────────────────────────────────────
+   A note used to be read here like anything else and given a tap-to-edit
+   gesture bolted on: this reader, rendered as plain read-only HTML, listening
+   for a click that wasn't on a link or a checklist box and navigating to the
+   editor when it saw one. It worked, but the tap that should have put a caret
+   on a word instead spent itself on a screen change — plain HTML can't take a
+   caret or raise a keyboard, so the editor opened a beat later with nothing
+   focused and the formatting row already sitting there, fully built, on a
+   screen you hadn't touched yet.
 
-   Two things opt out of becoming an edit: a link, which has somewhere else to
-   take you, and a checklist item, which already has a tap of its own — ticking
-   the box. Selecting text is the third: closing the note out from under a
-   tap meant to copy a sentence would be its own kind of accidental. */
-function wireTapToEdit(scroller, path, nav) {
-  scroller.addEventListener('click', (e) => {
-    if (e.target.closest('a')) return;
-    if (e.target.closest('ul[data-check] > li')) return;
-    if (document.getSelection().toString()) return;
-    nav(`#/write/${encodeURIComponent(path)}`);
-  });
-}
+   A note never reaches this file now. app.js sends a braindumps/ path
+   straight to editor.render() instead of here, and "reading" one is just that
+   screen before you've touched it — see the header comment in editor.js. */
 
 /* ── What the ⋯ opens ───────────────────────────────────────────────────────
    The two verbs that belong to the piece you're looking at, as two lines of
@@ -174,8 +158,12 @@ function actionsCard(node, path, nav) {
 
 /* ── Checklists, in the reader ──────────────────────────────────────────────
    A grocery list is not a document you read, it's a thing you use, and you use
-   it standing in a shop with the app open on the page — not in the editor. So
-   the boxes tick where they're printed.
+   it standing in a shop with the app open on the page — not composing a
+   sentence. So the boxes tick where they're printed, here, on a published
+   essay that happens to hold one. A note's own checklist ticks the same way
+   for the same reason, but through editor.js's click handler instead of this
+   one, now that a note IS its editor — see the mousedown guard next to it
+   there, which is this exact paragraph applied to a contenteditable surface.
 
    Only inline bodies are live. Checklists can only be made in this app, this
    app writes them inline, and a seeded essay has no boxes to tick — so a

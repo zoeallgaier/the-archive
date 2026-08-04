@@ -13,6 +13,26 @@
    thing that separates them is which folder you publish to, and a notes app
    that couldn't hold a list would just mean keeping the list somewhere else.
 
+   A note has no reading screen of its own any more, either. It used to be
+   read in entries.js — plain HTML with a click handler bolted on, which
+   navigated here the moment you tapped it. That worked, but the tap that
+   should have put a caret on a word instead spent itself on a screen change:
+   plain HTML can't take a caret or raise a keyboard, so the editor opened a
+   beat later with nothing focused, over a formatting row that was already
+   sitting there, fully built, on a screen you hadn't touched yet. Now a
+   braindumps/ path lands straight here — the redirect lives in app.js — and
+   "reading" a note is just this screen before you've touched it: the marks
+   row collapsed to nothing, no caret on screen, the same contenteditable
+   surface underneath either way. So the first tap IS a real tap on real
+   editable text, and the browser places the caret and raises the keyboard
+   itself, exactly where you touched — the thing the old click handler was
+   only ever trying to fake by navigating. The marks row grows in along with
+   it rather than arriving already built; see the note by markRow below. An
+   essay keeps its separate reader — publishing is the line where a piece
+   stops being something you idly tap into and becomes one you finished, and
+   that line is worth a screen of its own. A note never really crosses it the
+   same way; it's still just a page you write on.
+
    Two things are happening at once and they are not the same thing:
 
      SAVING is automatic and constant. A keystroke is a local file write, which
@@ -50,7 +70,7 @@
 
 import * as store from './store.js';
 import { toSrc, fromSrc } from './media.js';
-import { el, icon, body, page, toast } from './ui.js';
+import { el, icon, body, page, toast, card, confirm } from './ui.js';
 import { tick, selectionTick } from './platform.js';
 
 const AUTOSAVE_MS = 700;
@@ -660,7 +680,15 @@ function tidyChecks(host) {
 /** The six marks: a rule under the title, and the marks standing on it. This
     is the head's meta slot — where the reader prints a date — but not the meta
     STYLE, which is 11px caps and would track a single letter off its own
-    centre. .marks owns everything about this row. */
+    centre. .marks owns everything about this row — including, now, whether
+    it's on screen at all: see the focus/blur pair below and .marks--in in
+    app.css. Collapsed by default and grown open the moment `host` takes
+    focus, closed again the moment it loses it, so the row tracks writing the
+    same way a caret does — there the moment you're using it, gone the moment
+    you're not, never jump-cutting into place because it never simply
+    appears; it grows, on the same clock the rest of the app's motion runs on.
+    This is what makes a dormant note and an active one the same screen: nothing
+    else about the layout below the title differs between them. */
 function markRow(host, onChange) {
   const row = el('div.marks');
   const buttons = [];
@@ -727,6 +755,14 @@ function markRow(host, onChange) {
     }
   }
 
+  // Grown open on focus, collapsed on blur — see the doc comment above.
+  // `host` is bodyEl, never the title: the marks act on the body's selection
+  // and nowhere else (every `run` and `isOn` above takes `host`, not the
+  // title), so naming a title character isn't "writing" as far as this row
+  // is concerned and shouldn't summon tools that don't apply to it.
+  host.addEventListener('focus', () => row.classList.add('marks--in'));
+  host.addEventListener('blur', () => row.classList.remove('marks--in'));
+
   return { row, sync };
 }
 
@@ -743,6 +779,10 @@ export function render(path, nav, into = null) {
   let isDraft = existing ? !!existing.draft : true;
   let saveTimer = null;
   let dirty = false;
+
+  // A note has no reader of its own to hang a ⋯ on any more — see the header
+  // comment above. Changes what's offered in view.__chrome, below.
+  const isNote = (existing ? existing.path : home).startsWith('braindumps/');
 
   const view = el('div.view.view--bare');
 
@@ -795,6 +835,10 @@ export function render(path, nav, into = null) {
   view.__chrome = {
     back: true,
     main: { label: mainLabel(), onclick: onMain },
+    // Essays don't get this — Delete is still behind the ⋯ on the page they
+    // publish to. A note never leaves this screen, so this is its only ⋯,
+    // and Edit has no place on it: tapping into the words already is that.
+    ...(isNote ? { more: noteActionsCard } : {}),
   };
 
   function mainLabel() {
@@ -930,6 +974,26 @@ export function render(path, nav, into = null) {
     nav(`#/e/${encodeURIComponent(currentPath)}`, true);
   }
 
+  /* The only thing on a note's ⋯. See view.__chrome above for why it exists
+     at all and why Edit isn't on it too. */
+  function noteActionsCard() {
+    const c = card();
+    c.row('Delete', null, async () => {
+      selectionTick();
+      c.close();
+      // Nothing has ever been saved — the confirmation would be asking
+      // whether to delete a piece that doesn't exist yet. Just leave.
+      if (!currentPath) { nav('#/', true); return; }
+      const t = title.textContent.trim() || 'Untitled';
+      if (!await confirm(`Delete “${t}”?`, 'Delete')) return;
+      await store.remove(currentPath);
+      tick('Medium');
+      toast('Deleted');
+      nav('#/', true);
+    });
+    c.present();
+  }
+
   // The marks resync on input as well as on selection change: typing into the
   // front of a bold run moves you out of it without the caret going anywhere.
   title.addEventListener('input', schedule);
@@ -972,9 +1036,28 @@ export function render(path, nav, into = null) {
      checklist item is still text you have to be able to put the caret into,
      and a tap anywhere on the line toggling it would make the list
      uneditable. Everything left of the first character is the box. */
-  bodyEl.addEventListener('click', (e) => {
+  function checkboxAt(e) {
     const li = e.target.closest?.('ul[data-check] > li');
-    if (!li || e.clientX - li.getBoundingClientRect().left > CHECK_HIT) return;
+    if (!li || e.clientX - li.getBoundingClientRect().left > CHECK_HIT) return null;
+    return li;
+  }
+
+  /* Ticking a box must not wake a dormant note up. Left unguarded, the tap
+     would also do what any tap on editable text does: focus the body, drop a
+     caret in the item, grow the marks row open — exactly wrong for a list
+     you're using standing in a shop, where the ask is "tick milk," not "start
+     writing." Blocked on mousedown, before the browser hands out focus, the
+     same move the marks buttons above make to hold onto the caret through a
+     tap outside the text. If the body was already focused from actual
+     writing, this changes nothing — focus was already somewhere and stays
+     there; only the ability to MOVE it here is what's withheld. */
+  bodyEl.addEventListener('mousedown', (e) => {
+    if (checkboxAt(e)) e.preventDefault();
+  });
+
+  bodyEl.addEventListener('click', (e) => {
+    const li = checkboxAt(e);
+    if (!li) return;
     e.preventDefault();
     selectionTick();
     li.toggleAttribute('data-done');

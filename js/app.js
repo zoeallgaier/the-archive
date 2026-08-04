@@ -134,6 +134,13 @@ async function render() {
    mid-sentence is the same mistake as a Write button on a page you're reading,
    and the lightbox, which borrows the row for back and delete only.
 
+   A note's editor is the one exception, and it carries ⋯ alongside Publish
+   rather than instead of it. Merging a note's reading screen into its editor
+   (see editor.js) left Delete with nowhere else to live — an essay still has
+   a published page to hang its ⋯ on, a note doesn't have a second screen at
+   all any more. Two tenants on one screen, here, because the alternative was
+   a note that could never be deleted.
+
    THE LEFT EDGE HAS A SECOND TENANT, ON ONE SCREEN. Left is leaving, and the
    home screen is the one place in the app with nothing to leave — so the slot
    back would occupy is empty there, permanently, and the palette takes it.
@@ -197,8 +204,18 @@ async function routeTo(hash) {
     case 'search':
       return search.render(nav);
 
-    case 'e':
+    case 'e': {
+      // A note has no reading screen of its own any more — see the header
+      // comment in editor.js. Every route that used to land on the read-only
+      // reader for one opens the live editor instead, dormant until you tap
+      // into it — so a tree row, a search result and editor.js's own post-
+      // publish nav all still work without any of them having to know this.
+      const node = store.get(decoded);
+      if (node && node.kind === 'essay' && node.path.startsWith('braindumps/')) {
+        return editor.render(decoded, nav);
+      }
       return entries.renderReader(decoded, nav);
+    }
 
     // Two doors into the same screen, and the difference is only what the
     // editor is told: `write` opens a piece that exists, `new` opens a blank

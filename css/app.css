@@ -568,7 +568,19 @@
    cannot tell you: with a live body the mark is already visible in the text,
    so this isn't reporting what the words look like, it's reporting what the
    NEXT thing you type will be. It has to survive a glance mid-sentence, which
-   a change of colour does not and a filled disc does. */
+   a change of colour does not and a filled disc does.
+
+   DORMANT UNTIL THE BODY IS FOCUSED, .marks--in AWAY FROM IT. This row used
+   to just be here, fully built, the instant the editor mounted — which reads
+   as a jump cut on any screen it opens on, and is actively wrong for a note,
+   which no longer HAS a separate reading screen (see editor.js): the row
+   collapsing to nothing is the entire visual difference between reading a
+   note and writing in it. So the row is zero height at rest, .marks__btn
+   starts invisible and lifted a touch above where it lands, and both grow
+   into place together on focus rather than one appearing under the other.
+   Two elements, one motion: this row makes the room, the buttons rise into
+   it — same split .kids and .kids > * make opening a folder on the home
+   screen, for the same reason (see there). */
 
 .marks {
   display: flex;
@@ -580,9 +592,26 @@
      instead. They lose padding doing it, never the mark. */
   flex-wrap: nowrap;
   gap: var(--u);
+  overflow: hidden;
+
+  /* Collapsed: no height, no margin pushing the body down, no rule standing
+     over tools that aren't there. The ceiling on max-height only has to clear
+     one fixed thing — six buttons of --nav-h, never more, never fewer, never
+     wrapping (see above) — so a generous constant is exact here in a way it
+     isn't for the tree's arbitrary-length folders, which measure their height
+     in JS instead. */
+  max-height: 0;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: var(--hair) solid transparent;
+  transition: max-height var(--mid) var(--ease), margin-top var(--mid) var(--ease),
+              padding-top var(--mid) var(--ease), border-top-color var(--mid) var(--ease);
+}
+.marks--in {
+  max-height: calc(var(--nav-h) + var(--u) * 4);
   margin-top: var(--stack);
   padding-top: var(--u);
-  border-top: var(--hair) solid var(--rule-soft);
+  border-top-color: var(--rule-soft);
 }
 
 .marks__btn {
@@ -594,8 +623,14 @@
   align-items: center;
   justify-content: center;
   color: var(--ink-3);
-  transition: color var(--fast) var(--ease);
+  /* Invisible and lifted a touch at rest — grown in by .marks--in below,
+     together with the row itself. */
+  opacity: 0;
+  transform: translateY(calc(var(--u) * -1));
+  transition: color var(--fast) var(--ease),
+              opacity var(--mid) var(--ease), transform var(--mid) var(--ease);
 }
+.marks--in .marks__btn { opacity: 1; transform: none; }
 .marks__btn:active { color: var(--ink); }
 .marks__btn[aria-pressed="true"] { color: var(--void); }
 

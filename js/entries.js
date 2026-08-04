@@ -93,8 +93,40 @@ export async function renderReader(path, nav) {
     article.append(link);
   }
 
-  view.append(body(head(label(node), meta), article));
+  const scroller = body(head(label(node), meta), article);
+  view.append(scroller);
+
+  // Notes only — see wireTapToEdit. An essay keeps Edit behind the ⋯: it's a
+  // finished piece, and turning the whole page into a button would make
+  // reading one feel like standing on a trapdoor.
+  if (node.kind === 'essay' && path.startsWith('braindumps/')) wireTapToEdit(scroller, path, nav);
+
   return view;
+}
+
+/* ── Notes: notes-app style ──────────────────────────────────────────────────
+   A note has no separate reading mode: the page you scroll IS the page you'd
+   edit, and a tap is the only thing that tells the two apart. Scrolling (and a
+   tap that lands while the view is still coasting from one) must never fall
+   into the editor — so this doesn't hand-roll a tap/drag threshold at all. It
+   listens for `click`, and lets the webview's own gesture recognizer decide:
+   WebKit already withholds `click` after a touch has dragged the scroller, and
+   withholds it again when a touch lands only to stop a momentum scroll rather
+   than to tap what's under it. That's the exact "leeway for accidental taps"
+   asked for, for free — the same assumption liveChecklist already leans on a
+   few lines up.
+
+   Two things opt out of becoming an edit: a link, which has somewhere else to
+   take you, and a checklist item, which already has a tap of its own — ticking
+   the box. Selecting text is the third: closing the note out from under a
+   tap meant to copy a sentence would be its own kind of accidental. */
+function wireTapToEdit(scroller, path, nav) {
+  scroller.addEventListener('click', (e) => {
+    if (e.target.closest('a')) return;
+    if (e.target.closest('ul[data-check] > li')) return;
+    if (document.getSelection().toString()) return;
+    nav(`#/write/${encodeURIComponent(path)}`);
+  });
 }
 
 /* ── What the ⋯ opens ───────────────────────────────────────────────────────
